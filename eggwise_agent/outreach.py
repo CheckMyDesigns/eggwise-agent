@@ -1,0 +1,115 @@
+"""Outreach drafting (Gemini, consent-aware, PHI-free) and a simulated outbox.
+
+draft_outreach writes a personalized first-contact message for a prospective patient,
+on the non-clinical signals only (goal, location, readiness). It never includes clinical
+PHI, even for consented leads, because an outreach message to the patient should not.
+If the model call fails (no credentials), it falls back to a clean template so the
+console still works offline.
+
+The outbox is an in-memory, per-instance store: "sending" records the message and marks
+it sent. Nothing leaves the system. In production this maps to the clinic's email
+provider and the EggWise Fertility Tracker in-app messaging.
+"""
+from __future__ import annotations
+
+from datetime import datetime
+
+_MODEL = "gemini-2.5-flash"
+_client = None
+
+
+def _genai():
+    global _client
+    if _client is None:
+        from google import genai
+        _client = genai.Client()  # uses Vertex env: GOOGLE_GENAI_USE_VERTEXAI, project, location
+    return _client
+
+
+def _template(lead: dict, clinic: str, specialty: str, channel: str) -> dict:
+    goal = lead.get("goal", "fertility care")
+    loc = lead.get("location", "your area")
+    body = (
+        f"Hello,\n\n"
+        f"I'm reaching out from {clinic}. We specialize in {specialty or 'fertility care'}, "
+        f"and we would love to support you with {goal}. We work with people near {loc} and "
+        f"would be glad to answer your questions and help you take the next step whenever you "
+        f"feel ready.\n\n"
+        f"If you'd like, you can book a no-pressure consult with our team.\n\n"
+        f"Warmly,\n{clinic}"
+    )
+    if channel == "in-app":
+        return {"channel": "in-app", "subject": "", "body": body}
+    return {"channel": "email", "subject": f"{clinic}: support for your {goal} journey", "body": body}
+
+
+def draft_outreach(lead: dict, clinic: str = "your clinic", specialty: str = "",
+                   channel: str = "email") -> dict:
+    """Draft a warm, consent-aware, PHI-free first-contact message for a lead.
+
+    Returns {channel, subject, body}. Uses Gemini, with a template fallback so the
+    console is robust even without model credentials.
+    """
+    chan = "in-app" if channel == "in-app" else "email"
+    goal = lead.get("goal", "")
+    loc = lead.get("location", "")
+    signals = lead.get("signals", "")
+    fmt = ('Return "Subject: <subject line>" on the first line, then a blank line, then the body.'
+           if chan == "email" else "Return only the message body, with no subject line.")
+    prompt = (
+        f"Write a SHORT, warm, professional first-contact {chan} from {clinic}, a fertility "
+        f"clinic specializing in {specialty or 'fertility care'}, to a prospective patient who "
+        f"uses the EggWise Fertility Tracker app.\n"
+        f"Explain in 2 to 3 sentences why the clinic is a great fit for this person, then invite "
+        f"them to book a consult.\n"
+        f"Personalize ONLY on these non-clinical details: goal={goal!r}, location={loc!r}, "
+        f"readiness signals={signals!r}.\n"
+        f"HARD RULES: Never mention or imply any clinical or medical data (no AMH, BMI, "
+        f"diagnosis, lab values). Give no medical advice. No emojis. Address the reader "
+        f"generically with no name. Sign off as {clinic!r}.\n{fmt}"
+    )
+    try:
+        text = (_genai().models.generate_content(model=_MODEL, contents=prompt).text or "").strip()
+        if not text:
+            raise ValueError("empty response")
+        if chan == "email":
+            subject, body = "", text
+            if text.lower().startswith("subject:"):
+                first, _, rest = text.partition("\n")
+                subject = first.split(":", 1)[1].strip()
+                body = rest.strip()
+            if not subject:
+                subject = f"{clinic}: support for your {goal or 'fertility'} journey"
+            return {"channel": "email", "subject": subject, "body": body}
+        return {"channel": "in-app", "subject": "", "body": text}
+    except Exception:
+        return _template(lead, clinic, specialty, chan)
+
+
+# --------------------------------------------------------------------------
+# Simulated outbox (in-memory, per instance). Nothing actually sends.
+# --------------------------------------------------------------------------
+_OUTBOX: list[dict] = []
+_seq = 0
+
+
+def send_outreach(lead_id: str, channel: str, subject: str, body: str, to: str = "") -> dict:
+    """Record a one-click 'send'. Returns the sent record. Demo only: nothing leaves."""
+    global _seq
+    _seq += 1
+    rec = {
+        "id": f"msg-{_seq:03d}",
+        "lead_id": lead_id,
+        "channel": channel,
+        "subject": subject,
+        "body": body,
+        "to": to or ("in-app message" if channel == "in-app" else "(prospective patient)"),
+        "status": "sent",
+        "sent_at": datetime.now().isoformat(timespec="seconds"),
+    }
+    _OUTBOX.append(rec)
+    return rec
+
+
+def list_outbox() -> list[dict]:
+    return list(reversed(_OUTBOX))

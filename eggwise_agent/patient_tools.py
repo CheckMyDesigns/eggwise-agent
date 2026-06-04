@@ -5,6 +5,7 @@ creates a Google Calendar event through the clinic's existing OAuth integration.
 """
 from __future__ import annotations
 
+from . import calendar_tools
 from .tools import _load
 
 
@@ -29,18 +30,21 @@ def get_my_adherence(patient_id: str, days: int = 14) -> dict:
     return {}
 
 
-def book_followup(patient_id: str, preferred_date: str) -> dict:
+def book_followup(patient_id: str, preferred_date: str, time: str = "10:00") -> dict:
     """Book a follow-up appointment for the patient on the given date (YYYY-MM-DD).
 
-    Demo stub. In production this creates a Google Calendar event through the
-    clinic's existing Calendar OAuth integration.
+    Returns a ready-to-add Google Calendar invite link (and .ics) for the patient,
+    plus the proposed time the clinic will confirm. In production this creates the
+    event through the clinic's existing Calendar OAuth integration.
     """
-    return {
-        "patient_id": patient_id,
-        "date": preferred_date,
-        "status": "booked",
-        "note": "Demo booking. Production wires this to the clinic Google Calendar.",
-    }
+    res = calendar_tools.schedule_followup(
+        patient_id, preferred_date, time, reason="patient-requested follow-up"
+    )
+    if "error" in res:
+        return res
+    res["status"] = "ready_to_confirm"
+    res["note"] = "Add it to your calendar with the link. The clinic confirms the final time."
+    return res
 
 
 def get_approved_info(topic: str) -> dict:

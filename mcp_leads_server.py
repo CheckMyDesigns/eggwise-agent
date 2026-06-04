@@ -86,6 +86,26 @@ def save_match(lead_id: str, clinic: str, fit_score: int, reason: str) -> dict:
     }
 
 
+@mcp.tool()
+def save_outreach_draft(lead_id: str, channel: str, subject: str, message: str) -> dict:
+    """Save a DRAFT first-contact outreach message for a prospective patient, awaiting
+    clinic approval.
+
+    channel is "email" or "in-app" (delivered through the EggWise Fertility Tracker app).
+    The message must NOT contain clinical PHI (AMH, BMI, diagnosis, lab values), even for a
+    consented lead: personalize only on goal, location, and readiness. This never sends; it
+    returns a record for a human to review and approve before any outreach goes out.
+    """
+    return {
+        "lead_id": lead_id,
+        "channel": channel,
+        "subject": subject,
+        "message": message,
+        "status": "draft_awaiting_clinic_approval",
+        "note": "Not sent. A human reviews and approves before any outreach.",
+    }
+
+
 def _transport() -> str:
     t = os.environ.get("EGGWISE_MCP_TRANSPORT", "stdio").lower()
     if t in ("http", "streamable-http"):

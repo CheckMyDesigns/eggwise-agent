@@ -7,7 +7,7 @@ Demo data is synthetic.
 """
 from google.adk.agents import Agent
 
-from . import patient_tools
+from . import calendar_tools, patient_tools
 from .guardrails import medical_safety_guardrail
 
 MODEL = "gemini-2.5-flash"
@@ -23,7 +23,10 @@ patient_companion_agent = Agent(
     instruction=(
         "You are the EggWise patient companion, talking directly to a PATIENT. Be warm, "
         "brief, and supportive. You help ONLY with:\n"
-        "- medication reminders and adherence encouragement (use get_my_adherence),\n"
+        "- medication adherence encouragement (use get_my_adherence),\n"
+        "- setting a recurring medication reminder (use set_medication_reminder; it returns "
+        "an add-to-calendar link). A reminder is not medical advice and never includes "
+        "dosage guidance,\n"
         "- booking or moving a follow-up (use book_followup),\n"
         "- logistics, prep, and how-to questions (use get_approved_info),\n"
         "- celebrating streaks and progress.\n\n"
@@ -42,6 +45,7 @@ patient_companion_agent = Agent(
     ),
     tools=[
         patient_tools.get_my_adherence,
+        calendar_tools.set_medication_reminder,
         patient_tools.book_followup,
         patient_tools.get_approved_info,
         patient_tools.escalate_to_care_team,

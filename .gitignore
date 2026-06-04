@@ -18,3 +18,4 @@ debug_guardrail.py
 test_growth.py
 test_login.py
 SUBMISSION.md
+test_console.py

@@ -10,16 +10,27 @@ A login-gated instance runs on Cloud Run:
 (credentials are provided with the challenge submission). All data is synthetic and
 de-identified, so nothing touches a real patient.
 
+After signing in you land on the **EggWise Agent front-desk console**: a branded UI that
+does what a clinic front desk does. Find and rank prospective patients by fit, draft a
+personalized, consent-safe outreach message and send it with one click, schedule
+follow-ups and medication reminders (with real add-to-calendar links), open a patient for
+an adherence and symptom report with clinician-review flags, and a command bar that drives
+the live multi-agent coordinator in natural language. The raw ADK developer chat stays
+available at `/dev-ui/`.
+
 ## What it does
 One coordinator routes every request to three specialists:
 - **Growth** (for clinics): patient lead generation. Finds prospective patients and
-  their Wellness Scores over MCP, ranks them by fit for the clinic, and gives a one-line
-  reason why the clinic is the best match for each. Clinical detail (AMH, BMI, diagnosis)
-  is shown only for patients who consented to share.
-- **EggWise Agent** (for clinicians): reviews a patient's logs, flags at-risk patients,
-  and drafts check-ins and follow-up proposals for clinician review.
-- **Companion** (for patients): medication reminders, scheduling, logistics, and
-  encouragement. It never gives medical advice and escalates clinical questions.
+  their Wellness Scores over MCP, ranks them by fit for the clinic, gives a one-line
+  reason why the clinic is the best match for each, and drafts a personalized, PHI-free
+  first-contact message (email or in-app) for one-click sending. Clinical detail (AMH,
+  BMI, diagnosis) is shown only for patients who consented to share.
+- **EggWise Agent** (for clinicians): reviews a patient's logs, generates a structured
+  health report (adherence, symptom trend, mood, risk flags), flags at-risk patients, and
+  drafts check-ins plus calendar follow-up invites for clinician review.
+- **Companion** (for patients): medication reminders (with add-to-calendar links),
+  booking follow-ups, logistics, and encouragement. It never gives medical advice and
+  escalates clinical questions.
 
 Think of it as Ask versus Agent: "Ask EggWise" answers questions, EggWise Agent acts.
 
@@ -109,10 +120,14 @@ Dockerfile                    Cloud Run image
 ## Roadmap
 - [x] Multi-agent coordinator with three specialists
 - [x] Growth = patient lead-gen with consent-gated clinical detail
+- [x] Lead outreach: personalized, PHI-free draft + one-click send (simulated outbox)
+- [x] Scheduling and medication reminders with real add-to-calendar links
+- [x] Patient health reports (adherence, symptom trend, mood, risk flags)
+- [x] Branded front-desk console UI + command bar over the live coordinator
 - [x] MCP server (JSON / Firestore backend, stdio / HTTP)
 - [x] Layered medical-safety guardrail + audit trail
 - [x] Eval suite (100% routing, 100% guardrail catch)
-- [x] Deployed on Cloud Run with Cloud Trace
+- [x] Deployed on Cloud Run behind a login gate
 - [~] Firestore backend ready; enable with env vars + a read-only credential
 - [ ] 3-minute demo video
 - [ ] Full integration into the EggWise-Hippa app (Stripe entitlements gating)

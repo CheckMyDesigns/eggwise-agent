@@ -14,6 +14,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from google.adk.cli.fast_api import get_fast_api_app
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from eggwise_agent import console
+
 AGENTS_DIR = os.path.dirname(os.path.abspath(__file__))
 DEMO_USER = os.environ.get("DEMO_USER", "eggwise")
 DEMO_PASS = os.environ.get("DEMO_PASS", "")
@@ -27,6 +29,9 @@ app = get_fast_api_app(
     session_service_uri="memory://",
     use_local_storage=False,
 )
+
+# Branded front-desk console (the screen judges see) + its JSON API.
+console.register_console(app)
 
 # EggWise egg mark (from the app's eggwise-logo-premium.svg): sage egg + gold check + sparkles.
 LOGO_SVG = (
@@ -155,7 +160,7 @@ async def login_submit(request: Request):
     pwd = form.get("password") or ""
     if DEMO_PASS and user == DEMO_USER and pwd == DEMO_PASS:
         secure = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
-        resp = RedirectResponse("/", status_code=303)
+        resp = RedirectResponse("/console", status_code=303)
         resp.set_cookie(COOKIE, TOKEN, httponly=True, samesite="lax", secure=secure, max_age=60 * 60 * 12)
         return resp
     return RedirectResponse("/login?error=1", status_code=303)
@@ -170,16 +175,18 @@ async def logout():
 
 class LoginGate(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        if not DEMO_PASS:
-            return await call_next(request)
         path = request.url.path
-        if path.startswith("/login") or path.startswith("/logout") or path == "/favicon.ico":
-            return await call_next(request)
-        if request.cookies.get(COOKIE) == TOKEN:
-            return await call_next(request)
-        if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-            return RedirectResponse("/login", status_code=303)
-        return Response("Authentication required.", status_code=401)
+        is_html_get = request.method == "GET" and "text/html" in request.headers.get("accept", "")
+        if DEMO_PASS:
+            exempt = path.startswith("/login") or path.startswith("/logout") or path == "/favicon.ico"
+            if not exempt and request.cookies.get(COOKIE) != TOKEN:
+                if is_html_get:
+                    return RedirectResponse("/login", status_code=303)
+                return Response("Authentication required.", status_code=401)
+        # Land everyone on the branded front-desk console.
+        if path == "/" and is_html_get:
+            return RedirectResponse("/console", status_code=303)
+        return await call_next(request)
 
 
 app.add_middleware(LoginGate)

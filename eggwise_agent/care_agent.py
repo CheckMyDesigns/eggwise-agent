@@ -5,7 +5,7 @@ or gives autonomous medical advice. Every output is a draft for clinician review
 """
 from google.adk.agents import Agent
 
-from . import tools
+from . import calendar_tools, tools
 
 MODEL = "gemini-2.5-flash"
 
@@ -28,9 +28,12 @@ care_agent = Agent(
         "patient.\n"
         "2. Summarize trends: adherence streaks, missed logs, and symptoms worth a "
         "clinician's attention. Do not diagnose; surface, do not conclude.\n"
-        "3. Draft a brief, warm check-in message the CLINICIAN can edit and send.\n"
-        "4. If a follow-up seems warranted, call propose_followup with a suggested date "
-        "and reason.\n\n"
+        "3. For a full picture, call generate_health_report to get adherence, symptom "
+        "frequency, mood trend, and risk flags plus a clinician-ready report.\n"
+        "4. Draft a brief, warm check-in message the CLINICIAN can edit and send.\n"
+        "5. If a follow-up is warranted, call schedule_followup with a date, time, and "
+        "reason; it returns a Google Calendar invite link the clinician can review and "
+        "send. Use reschedule_followup or cancel_followup to move or cancel one.\n\n"
         "Always state clearly that your outputs require clinician review before any action. "
         "Close with this exact line on its own:\n"
         "This data is from the EggWise AI Fertility Tracker."
@@ -38,6 +41,9 @@ care_agent = Agent(
     tools=[
         tools.list_patients,
         tools.get_patient_daily_logs,
-        tools.propose_followup,
+        tools.generate_health_report,
+        calendar_tools.schedule_followup,
+        calendar_tools.reschedule_followup,
+        calendar_tools.cancel_followup,
     ],
 )
