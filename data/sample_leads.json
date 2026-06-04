@@ -1,0 +1,62 @@
+[
+  {
+    "id": "lead-001",
+    "contact_name": "Dr. Priya Nair",
+    "clinic": "Golden Gate Reproductive Health",
+    "specialty": "Reproductive Endocrinology",
+    "location": "San Francisco, CA",
+    "plan_interest": "Growth ($349/mo)",
+    "message": "We do a high volume of egg-freezing consults and want a steady pipeline of qualified self-pay patients. Ready to start this month.",
+    "submitted_at": "2026-05-28"
+  },
+  {
+    "id": "lead-002",
+    "contact_name": "Dr. Marcus Webb",
+    "clinic": "Manhattan Fertility Partners",
+    "specialty": "Fertility / IVF",
+    "location": "New York, NY",
+    "plan_interest": "Starter ($149/mo)",
+    "message": "Interested in trying the platform for fertility patients. Comparing a couple of vendors.",
+    "submitted_at": "2026-05-29"
+  },
+  {
+    "id": "lead-003",
+    "contact_name": "Dr. Lena Fischer",
+    "clinic": "Austin Wellness Clinic",
+    "specialty": "General OB/GYN",
+    "location": "Austin, TX",
+    "plan_interest": "Just browsing",
+    "message": "Saw an ad, curious what this is.",
+    "submitted_at": "2026-05-30"
+  },
+  {
+    "id": "lead-004",
+    "contact_name": "Dr. Sofia Alvarez",
+    "clinic": "Bay Area Fertility Institute",
+    "specialty": "Reproductive Endocrinology",
+    "location": "Palo Alto, CA",
+    "plan_interest": "Custom / Enterprise",
+    "message": "Multi-site practice, ~600 egg-freezing cycles a year. Need enterprise lead volume and reporting. Decision in two weeks.",
+    "submitted_at": "2026-05-27"
+  },
+  {
+    "id": "lead-005",
+    "contact_name": "Tara Lindqvist",
+    "clinic": "Glow Wellness MedSpa",
+    "specialty": "Aesthetics / Wellness",
+    "location": "Miami, FL",
+    "plan_interest": "Unsure",
+    "message": "Do you do botox and skincare leads?",
+    "submitted_at": "2026-05-30"
+  },
+  {
+    "id": "lead-006",
+    "contact_name": "Dr. Aisha Khan",
+    "clinic": "Brooklyn Women's Health",
+    "specialty": "OB/GYN with fertility services",
+    "location": "Brooklyn, NY",
+    "plan_interest": "Growth ($349/mo)",
+    "message": "Expanding our fertility line and want local egg-freezing leads. Keen to begin soon.",
+    "submitted_at": "2026-05-29"
+  }
+]

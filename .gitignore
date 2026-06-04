@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+*.log
+logs/
+.adk/
+
+# Keep the public repo agent-focused: business/asset tooling stays local only
+make_deck.py
+make_explainer.py
+make_arch.py
+make_arch_svg.py
+make_arch_pptx.py
+make_stripe_assets.py
+debug_guardrail.py
+test_growth.py
+SUBMISSION.md

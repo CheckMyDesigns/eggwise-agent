@@ -1,0 +1,46 @@
+[
+  {
+    "id": "pt-maya",
+    "name": "Maya (demo)",
+    "logs": [
+      {"date": "2026-05-30", "meds_taken": true, "symptoms": ["mild bloating"], "mood": 4, "notes": "Feeling good, on track."},
+      {"date": "2026-05-29", "meds_taken": true, "symptoms": [], "mood": 5, "notes": ""},
+      {"date": "2026-05-28", "meds_taken": true, "symptoms": ["mild bloating"], "mood": 4, "notes": ""},
+      {"date": "2026-05-27", "meds_taken": true, "symptoms": [], "mood": 4, "notes": ""},
+      {"date": "2026-05-26", "meds_taken": true, "symptoms": [], "mood": 5, "notes": "Strong streak."}
+    ]
+  },
+  {
+    "id": "pt-jasmine",
+    "name": "Jasmine (demo)",
+    "logs": [
+      {"date": "2026-05-30", "meds_taken": false, "symptoms": [], "mood": 2, "notes": ""},
+      {"date": "2026-05-29", "meds_taken": false, "symptoms": [], "mood": 2, "notes": "Missed dose again, busy week."},
+      {"date": "2026-05-25", "meds_taken": true, "symptoms": ["headache"], "mood": 3, "notes": ""},
+      {"date": "2026-05-24", "meds_taken": true, "symptoms": [], "mood": 3, "notes": ""},
+      {"date": "2026-05-23", "meds_taken": true, "symptoms": [], "mood": 4, "notes": ""}
+    ]
+  },
+  {
+    "id": "pt-sarah",
+    "name": "Sarah (demo)",
+    "logs": [
+      {"date": "2026-05-30", "meds_taken": true, "symptoms": ["pelvic pain", "bloating"], "mood": 2, "notes": "Discomfort increasing."},
+      {"date": "2026-05-29", "meds_taken": true, "symptoms": ["bloating"], "mood": 3, "notes": ""},
+      {"date": "2026-05-28", "meds_taken": true, "symptoms": ["mild cramping"], "mood": 3, "notes": ""},
+      {"date": "2026-05-27", "meds_taken": true, "symptoms": [], "mood": 4, "notes": ""},
+      {"date": "2026-05-26", "meds_taken": true, "symptoms": [], "mood": 4, "notes": ""}
+    ]
+  },
+  {
+    "id": "pt-david",
+    "name": "David (demo, partner of patient)",
+    "logs": [
+      {"date": "2026-05-30", "meds_taken": true, "symptoms": [], "mood": 3, "notes": ""},
+      {"date": "2026-05-29", "meds_taken": true, "symptoms": [], "mood": 3, "notes": "Steady but a bit anxious about timeline."},
+      {"date": "2026-05-28", "meds_taken": true, "symptoms": [], "mood": 3, "notes": ""},
+      {"date": "2026-05-27", "meds_taken": true, "symptoms": [], "mood": 2, "notes": ""},
+      {"date": "2026-05-26", "meds_taken": true, "symptoms": [], "mood": 3, "notes": ""}
+    ]
+  }
+]

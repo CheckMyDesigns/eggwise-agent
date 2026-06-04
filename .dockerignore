@@ -1,0 +1,13 @@
+.venv/
+**/__pycache__/
+*.pyc
+logs/
+*.pptx
+make_deck.py
+make_stripe_assets.py
+make_explainer.py
+smoke_agent.py
+run_scenarios.py
+debug_guardrail.py
+test_guardrail_transfer.py
+.git/

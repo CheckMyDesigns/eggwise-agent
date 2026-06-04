@@ -1,0 +1,27 @@
+[
+  {
+    "topic": "logging",
+    "keywords": ["log", "track", "diary", "record", "how do i log"],
+    "answer": "Log once a day, ideally at the same time. Tap the plus button, mark whether you took your medication, add any notes, and save. Daily logs help your care team see your progress."
+  },
+  {
+    "topic": "appointment",
+    "keywords": ["appointment", "visit", "prep", "bring", "before my"],
+    "answer": "For your appointment, bring a photo ID, your insurance card, and a list of current medications. Arrive about 10 minutes early. You can review or change your appointment time any time in the app."
+  },
+  {
+    "topic": "medication_timing",
+    "keywords": ["when do i take", "what time", "schedule", "remind"],
+    "answer": "Take your medication at the same time each day as directed by your care team, and the app can remind you. For any question about your specific dose, your care team is the right source."
+  },
+  {
+    "topic": "support",
+    "keywords": ["stressed", "anxious", "scared", "overwhelmed", "support group", "how i feel"],
+    "answer": "This journey can feel like a lot. Many clinics offer counseling and support groups, and your care team can connect you. You are not alone in this."
+  },
+  {
+    "topic": "clinic_hours",
+    "keywords": ["hours", "open", "contact", "reach you", "phone"],
+    "answer": "Most clinics are open weekdays during business hours and have an after-hours line for urgent needs. Check your clinic profile in the app for exact hours and contact details."
+  }
+]
