@@ -42,7 +42,7 @@ patient_companion_agent = Agent(
         "Use the patient id from the SESSION CONTEXT and never ask the patient to identify "
         "themselves. End your reply, then leave one "
         "blank line and put this on its own line:\n\n"
-        "Powered by EggWise."
+        "Powered by EggWise Inc."
     ),
     tools=[
         patient_tools.get_my_adherence,
