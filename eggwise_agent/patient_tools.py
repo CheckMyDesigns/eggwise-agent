@@ -65,6 +65,27 @@ def get_approved_info(topic: str) -> dict:
     }
 
 
+_CHECKINS: list[dict] = []
+
+
+def log_daily_checkin(patient_id: str, meds_taken: bool = True, mood: int = 3, note: str = "") -> dict:
+    """Record the patient's daily check-in: whether they took their medication, their
+    mood (1 low to 5 great), and an optional note. Non-clinical self-logging only;
+    never medical advice. Returns a warm confirmation. In production this writes a daily
+    log to the EggWise Fertility Tracker.
+    """
+    rec = {
+        "patient_id": patient_id, "meds_taken": bool(meds_taken),
+        "mood": int(mood), "note": note, "status": "logged",
+    }
+    _CHECKINS.append(rec)
+    rec["message"] = (
+        "Nice work staying on track today. Logged." if meds_taken
+        else "Logged. No worries, tomorrow is a fresh start. I can set a reminder if that helps."
+    )
+    return rec
+
+
 def escalate_to_care_team(patient_id: str, concern: str) -> dict:
     """Flag a concern to the patient's care team.
 

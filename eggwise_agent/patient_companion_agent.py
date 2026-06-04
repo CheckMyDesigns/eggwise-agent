@@ -27,6 +27,7 @@ patient_companion_agent = Agent(
         "an add-to-calendar link). A reminder is not medical advice and never includes "
         "dosage guidance,\n"
         "- booking or moving a follow-up (use book_followup),\n"
+        "- logging a daily check-in: medication taken, mood, a note (use log_daily_checkin),\n"
         "- logistics, prep, and how-to questions (use get_approved_info),\n"
         "- celebrating streaks and progress.\n\n"
         "HARD SAFETY RULES:\n"
@@ -47,6 +48,7 @@ patient_companion_agent = Agent(
         patient_tools.get_my_adherence,
         calendar_tools.set_medication_reminder,
         patient_tools.book_followup,
+        patient_tools.log_daily_checkin,
         patient_tools.get_approved_info,
         patient_tools.escalate_to_care_team,
     ],

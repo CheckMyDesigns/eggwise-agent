@@ -106,6 +106,25 @@ async def api_reminder(request: Request):
     )
 
 
+@router.get("/api/info/topics")
+def api_info_topics():
+    return {"topics": tools._load("approved_content.json")}
+
+
+@router.get("/api/info")
+def api_info(topic: str = ""):
+    return patient_tools.get_approved_info(topic)
+
+
+@router.post("/api/checkin")
+async def api_checkin(request: Request):
+    b = await request.json()
+    return patient_tools.log_daily_checkin(
+        b.get("patient_id", ""), bool(b.get("meds_taken", True)),
+        int(b.get("mood", 3)), b.get("note", ""),
+    )
+
+
 def _context_preamble(audience: str, patient_id: str = "", patient_name: str = "") -> str:
     """Session context the coordinator trusts so it routes/acts without interrogating."""
     if audience == "patient":
