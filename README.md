@@ -4,6 +4,12 @@ An autonomous, multi-agent system built with Google's Agent Development Kit (ADK
 Gemini, and the Model Context Protocol (MCP). It is the AI layer inside EggWise-Hippa,
 a deployed, HIPAA-oriented fertility platform, and runs on Cloud Run.
 
+## Live demo
+A login-gated instance runs on Cloud Run:
+**https://eggwise-agent-hdakio4noa-uc.a.run.app**
+(credentials are provided with the challenge submission). All data is synthetic and
+de-identified, so nothing touches a real patient.
+
 ## What it does
 One coordinator routes every request to three specialists:
 - **Growth** (for clinics): patient lead generation. Finds prospective patients and
@@ -78,8 +84,9 @@ MCP transport: `EGGWISE_MCP_TRANSPORT` = `stdio` (default), `http`, or `sse`
 ## Deploy
 See `DEPLOY.md`. In short, from this folder:
 `gcloud run deploy eggwise-agent --source . --region us-central1 ...`. The Dockerfile
-packages the agent, the MCP server, and the data, and runs `adk web` on Cloud Run with
-Cloud Trace enabled.
+packages the agent, the MCP server, and the data, and serves the ADK FastAPI app through
+`main.py`, which adds a signed-cookie login gate (`DEMO_USER` / `DEMO_PASS`) in front of
+the console.
 
 ## Project layout
 ```

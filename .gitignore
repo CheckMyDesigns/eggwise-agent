@@ -13,6 +13,7 @@ make_arch.py
 make_arch_svg.py
 make_arch_pptx.py
 make_stripe_assets.py
+make_judge_guide.py
 debug_guardrail.py
 test_growth.py
 test_login.py
