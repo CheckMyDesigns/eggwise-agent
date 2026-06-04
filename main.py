@@ -50,35 +50,35 @@ LOGIN_HTML = """<!doctype html>
 <title>EggWise Agent &mdash; Sign in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#1A1612; --ink:#FBF6EA; --muted:#A99B8C;
-    --teal:#2D6A6D; --teal-bright:#7CB0AD;
-    --gold:#A66D14; --gold-bright:#C79A3A;
+    --bg:#0A0F1C; --ink:#EEE4D2; --muted:#9CA3AF;
+    --teal:#74A0A0; --teal-bright:#8FBDBB;
+    --gold:#FFD700; --gold-bright:#FFCBA4;
   }
   *{ box-sizing:border-box; }
   html,body{ height:100%; }
   body{
     margin:0; color:var(--ink);
-    font-family:'Inter',ui-sans-serif,system-ui,"Segoe UI",sans-serif;
+    font-family:'Nunito Sans',ui-sans-serif,system-ui,"Segoe UI",sans-serif;
     -webkit-font-smoothing:antialiased;
     background:
-      radial-gradient(900px 520px at 14% -12%, rgba(45,106,109,.30), transparent 60%),
-      radial-gradient(720px 520px at 112% 118%, rgba(166,109,20,.18), transparent 55%),
-      linear-gradient(160deg,#221b15 0%, #1A1612 50%, #120d09 100%);
+      radial-gradient(900px 520px at 14% -12%, rgba(116,160,160,.20), transparent 60%),
+      radial-gradient(720px 520px at 112% 118%, rgba(255,215,0,.10), transparent 55%),
+      linear-gradient(160deg,#0F1626 0%, #0A0F1C 55%, #070B14 100%);
     display:flex; align-items:center; justify-content:center; padding:24px; overflow:hidden;
   }
   .orb{ position:fixed; border-radius:50%; filter:blur(22px); z-index:0; pointer-events:none;
     width:540px; height:540px; top:-130px; left:-90px;
-    background:radial-gradient(circle at 35% 30%, rgba(45,106,109,.42), rgba(45,106,109,0) 62%); }
+    background:radial-gradient(circle at 35% 30%, rgba(116,160,160,.34), rgba(116,160,160,0) 62%); }
   .orb.gold{ width:440px; height:440px; top:auto; left:auto; bottom:-130px; right:-100px;
-    background:radial-gradient(circle at 60% 60%, rgba(166,109,20,.20), rgba(166,109,20,0) 60%); }
+    background:radial-gradient(circle at 60% 60%, rgba(255,215,0,.14), rgba(255,215,0,0) 60%); }
   .card{
     position:relative; z-index:1; width:100%; max-width:394px;
-    background:linear-gradient(180deg, rgba(58,45,37,.55), rgba(30,24,19,.68));
-    border:1px solid rgba(239,215,154,.12); border-radius:18px; padding:38px 36px 28px;
-    box-shadow:0 34px 90px -34px rgba(0,0,0,.78), inset 0 1px 0 rgba(255,255,255,.05);
+    background:linear-gradient(180deg, rgba(22,32,58,.74), rgba(17,24,39,.84));
+    border:1px solid rgba(116,160,160,.18); border-radius:18px; padding:38px 36px 28px;
+    box-shadow:0 34px 90px -34px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.04);
     backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); overflow:hidden;
   }
   .card::before{ content:""; position:absolute; left:0; right:0; top:0; height:3px;
@@ -86,22 +86,22 @@ LOGIN_HTML = """<!doctype html>
   .logo{ margin:0 0 12px; }
   .logo svg{ display:block; filter:drop-shadow(0 8px 16px rgba(0,0,0,.45)); }
   .tag{ font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--teal-bright); font-weight:600; }
-  .brand{ font-family:'Fraunces',Georgia,serif; font-size:40px; line-height:1.04;
-    margin:7px 0 0; font-weight:600; letter-spacing:-.01em; }
+  .brand{ font-family:'Poppins',sans-serif; font-size:38px; line-height:1.04;
+    margin:7px 0 0; font-weight:700; letter-spacing:-.01em; }
   .brand .dot{ color:var(--gold-bright); }
   .tagline{ color:var(--muted); font-size:14px; margin:7px 0 26px; }
   label{ display:block; font-size:12px; color:var(--muted); margin:0 0 7px 2px; }
   .field{ margin-bottom:16px; }
   input{ width:100%; padding:13px 14px; border-radius:11px; color:var(--ink); font-size:15px;
-    font-family:inherit; background:rgba(18,13,9,.55); border:1px solid rgba(239,215,154,.14); outline:none;
+    font-family:inherit; background:rgba(13,20,34,.72); border:1px solid rgba(116,160,160,.20); outline:none;
     transition:border-color .18s, box-shadow .18s, background .18s; }
-  input::placeholder{ color:#8a7a68; }
-  input:focus{ border-color:var(--teal-bright); box-shadow:0 0 0 3px rgba(124,176,173,.20); background:rgba(18,13,9,.8); }
+  input::placeholder{ color:#7c8597; }
+  input:focus{ border-color:var(--teal-bright); box-shadow:0 0 0 3px rgba(116,160,160,.22); background:rgba(13,20,34,.92); }
   button{ width:100%; margin-top:6px; padding:13px 16px; border:0; border-radius:11px; cursor:pointer;
-    font-family:inherit; font-size:15px; font-weight:700; color:#1A1612; letter-spacing:.01em;
-    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
-    box-shadow:0 10px 24px -10px rgba(166,109,20,.55); transition:transform .12s, box-shadow .18s, filter .18s; }
-  button:hover{ transform:translateY(-1px); filter:brightness(1.07); box-shadow:0 14px 30px -10px rgba(166,109,20,.65); }
+    font-family:inherit; font-size:15px; font-weight:700; color:#ffffff; letter-spacing:.01em;
+    background:linear-gradient(135deg,var(--teal),#0D9488);
+    box-shadow:0 12px 26px -12px rgba(116,160,160,.7); transition:transform .12s, box-shadow .18s, filter .18s; }
+  button:hover{ transform:translateY(-1px); filter:brightness(1.08); box-shadow:0 16px 32px -12px rgba(116,160,160,.8); }
   button:active{ transform:translateY(0); }
   .error{ background:rgba(192,106,72,.16); border:1px solid rgba(192,106,72,.5); color:#f3cdb8;
     font-size:13px; padding:10px 12px; border-radius:10px; margin-bottom:18px; }
