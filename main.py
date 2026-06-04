@@ -1,8 +1,8 @@
 """Cloud Run / local entrypoint for EggWise Agent, with a branded login gate.
 
-Wraps the ADK FastAPI app, serves a styled /login page (EggWise branding), and
-protects every other route behind a signed cookie. Set DEMO_PASS to require login
-(DEMO_USER defaults to "eggwise"); leave DEMO_PASS unset to run open (local dev).
+Wraps the ADK FastAPI app, serves a styled /login page (EggWise brand: Fraunces +
+Inter, warm palette, egg logo), and protects every other route behind a signed
+cookie. Set DEMO_PASS to require login (DEMO_USER defaults to "eggwise").
 """
 import hashlib
 import hmac
@@ -43,59 +43,66 @@ LOGIN_HTML = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EggWise Agent &mdash; Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{ --charcoal:#1F292E; --teal:#14B8A6; --sage:#74A0A0; --gold:#FFD700; --ink:#EAF0EF; --muted:#9DB0AD; }
+  :root{
+    --bg:#1A1612; --ink:#FBF6EA; --muted:#A99B8C;
+    --teal:#2D6A6D; --teal-bright:#7CB0AD;
+    --gold:#A66D14; --gold-bright:#C79A3A;
+  }
   *{ box-sizing:border-box; }
   html,body{ height:100%; }
   body{
     margin:0; color:var(--ink);
-    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,sans-serif;
+    font-family:'Inter',ui-sans-serif,system-ui,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;
     background:
-      radial-gradient(900px 520px at 14% -12%, rgba(20,184,166,.20), transparent 60%),
-      radial-gradient(720px 520px at 112% 118%, rgba(255,215,0,.10), transparent 55%),
-      linear-gradient(160deg,#233030 0%, #1F292E 46%, #151d1c 100%);
+      radial-gradient(900px 520px at 14% -12%, rgba(45,106,109,.30), transparent 60%),
+      radial-gradient(720px 520px at 112% 118%, rgba(166,109,20,.18), transparent 55%),
+      linear-gradient(160deg,#221b15 0%, #1A1612 50%, #120d09 100%);
     display:flex; align-items:center; justify-content:center; padding:24px; overflow:hidden;
   }
   .orb{ position:fixed; border-radius:50%; filter:blur(22px); z-index:0; pointer-events:none;
     width:540px; height:540px; top:-130px; left:-90px;
-    background:radial-gradient(circle at 35% 30%, rgba(116,160,160,.40), rgba(116,160,160,0) 62%); }
+    background:radial-gradient(circle at 35% 30%, rgba(45,106,109,.42), rgba(45,106,109,0) 62%); }
   .orb.gold{ width:440px; height:440px; top:auto; left:auto; bottom:-130px; right:-100px;
-    background:radial-gradient(circle at 60% 60%, rgba(255,215,0,.18), rgba(255,215,0,0) 60%); }
+    background:radial-gradient(circle at 60% 60%, rgba(166,109,20,.20), rgba(166,109,20,0) 60%); }
   .card{
     position:relative; z-index:1; width:100%; max-width:394px;
-    background:linear-gradient(180deg, rgba(38,52,50,.74), rgba(24,34,32,.74));
-    border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:38px 36px 28px;
-    box-shadow:0 34px 90px -34px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.05);
+    background:linear-gradient(180deg, rgba(58,45,37,.55), rgba(30,24,19,.68));
+    border:1px solid rgba(239,215,154,.12); border-radius:18px; padding:38px 36px 28px;
+    box-shadow:0 34px 90px -34px rgba(0,0,0,.78), inset 0 1px 0 rgba(255,255,255,.05);
     backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); overflow:hidden;
   }
   .card::before{ content:""; position:absolute; left:0; right:0; top:0; height:3px;
-    background:linear-gradient(90deg,var(--teal),var(--gold)); }
+    background:linear-gradient(90deg,var(--teal-bright),var(--gold-bright)); }
   .logo{ margin:0 0 12px; }
-  .logo svg{ display:block; filter:drop-shadow(0 8px 16px rgba(0,0,0,.4)); }
-  .tag{ font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--teal); font-weight:600; }
-  .brand{ font-family:ui-serif,Georgia,"Times New Roman",serif; font-size:38px; line-height:1.05;
+  .logo svg{ display:block; filter:drop-shadow(0 8px 16px rgba(0,0,0,.45)); }
+  .tag{ font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--teal-bright); font-weight:600; }
+  .brand{ font-family:'Fraunces',Georgia,serif; font-size:40px; line-height:1.04;
     margin:7px 0 0; font-weight:600; letter-spacing:-.01em; }
-  .brand .dot{ color:var(--gold); }
+  .brand .dot{ color:var(--gold-bright); }
   .tagline{ color:var(--muted); font-size:14px; margin:7px 0 26px; }
   label{ display:block; font-size:12px; color:var(--muted); margin:0 0 7px 2px; }
   .field{ margin-bottom:16px; }
   input{ width:100%; padding:13px 14px; border-radius:11px; color:var(--ink); font-size:15px;
-    background:rgba(13,19,18,.6); border:1px solid rgba(255,255,255,.10); outline:none;
+    font-family:inherit; background:rgba(18,13,9,.55); border:1px solid rgba(239,215,154,.14); outline:none;
     transition:border-color .18s, box-shadow .18s, background .18s; }
-  input::placeholder{ color:#5e706d; }
-  input:focus{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(20,184,166,.18); background:rgba(13,19,18,.85); }
+  input::placeholder{ color:#8a7a68; }
+  input:focus{ border-color:var(--teal-bright); box-shadow:0 0 0 3px rgba(124,176,173,.20); background:rgba(18,13,9,.8); }
   button{ width:100%; margin-top:6px; padding:13px 16px; border:0; border-radius:11px; cursor:pointer;
-    font-size:15px; font-weight:700; color:#15201d; letter-spacing:.01em;
-    background:linear-gradient(180deg,#ffe066,var(--gold));
-    box-shadow:0 10px 24px -10px rgba(255,215,0,.5); transition:transform .12s, box-shadow .18s, filter .18s; }
-  button:hover{ transform:translateY(-1px); filter:brightness(1.05); box-shadow:0 14px 30px -10px rgba(255,215,0,.6); }
+    font-family:inherit; font-size:15px; font-weight:700; color:#1A1612; letter-spacing:.01em;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    box-shadow:0 10px 24px -10px rgba(166,109,20,.55); transition:transform .12s, box-shadow .18s, filter .18s; }
+  button:hover{ transform:translateY(-1px); filter:brightness(1.07); box-shadow:0 14px 30px -10px rgba(166,109,20,.65); }
   button:active{ transform:translateY(0); }
-  .error{ background:rgba(225,90,90,.12); border:1px solid rgba(225,90,90,.42); color:#ffb4b4;
+  .error{ background:rgba(192,106,72,.16); border:1px solid rgba(192,106,72,.5); color:#f3cdb8;
     font-size:13px; padding:10px 12px; border-radius:10px; margin-bottom:18px; }
-  .foot{ margin-top:22px; text-align:center; font-size:11.5px; color:#6c7d7a; }
-  .foot b{ color:var(--muted); font-weight:600; }
-  .foot a{ color:var(--teal); text-decoration:none; font-weight:600; }
-  .foot a:hover{ color:var(--gold); }
+  .foot{ margin-top:22px; text-align:center; font-size:11.5px; color:#8a7a68; }
+  .foot a{ color:var(--teal-bright); text-decoration:none; font-weight:600; }
+  .foot a:hover{ color:var(--gold-bright); }
   .card>*{ opacity:0; transform:translateY(8px); animation:rise .6s cubic-bezier(.2,.7,.2,1) forwards; }
   .card>*:nth-child(1){ animation-delay:.05s } .card>*:nth-child(2){ animation-delay:.11s }
   .card>*:nth-child(3){ animation-delay:.17s } .card>*:nth-child(4){ animation-delay:.23s }
