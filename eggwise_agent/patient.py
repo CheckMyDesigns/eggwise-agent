@@ -66,7 +66,7 @@ __PATIENT__</style>
     <nav class="side">
       <div class="ntitle">My EggWise</div>
       <button class="navbtn active" data-view="home"><span class="ico">&#127968;</span> Home</button>
-      <button class="navbtn" data-view="chat"><span class="ico">&#128172;</span> Ask EggWise</button>
+      <button class="navbtn ask" data-view="chat"><span class="ico">&#128172;</span> Ask EggWise</button>
       <button class="navbtn" data-view="care"><span class="ico">&#128138;</span> Reminders &amp; visits</button>
       <button class="navbtn" data-view="learn"><span class="ico">&#128214;</span> Learn</button>
     </nav>
@@ -75,7 +75,7 @@ __PATIENT__</style>
 
   <nav class="tabbar">
     <button class="navbtn active" data-view="home"><span class="ico">&#127968;</span>Home</button>
-    <button class="navbtn" data-view="chat"><span class="ico">&#128172;</span>Ask</button>
+    <button class="navbtn ask" data-view="chat"><span class="ico">&#128172;</span>Ask</button>
     <button class="navbtn" data-view="care"><span class="ico">&#128138;</span>Care</button>
     <button class="navbtn" data-view="learn"><span class="ico">&#128214;</span>Learn</button>
   </nav>

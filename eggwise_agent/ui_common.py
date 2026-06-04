@@ -56,6 +56,8 @@ BASE_CSS = r"""
   .navbtn .ico{width:18px;text-align:center;opacity:.85}
   .navbtn:hover{background:var(--teal-tint);color:var(--ink)}
   .navbtn.active{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#fff;box-shadow:0 8px 20px -10px rgba(116,160,160,.6)}
+  .navbtn.ask{border:1px solid rgba(255,215,0,.55)}
+  .navbtn.ask:not(.active){color:var(--gold)}
   .ntitle{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute);opacity:.7;padding:6px 12px 4px}
   .work{display:flex;flex-direction:column;min-height:0}
   main{flex:1;overflow:auto;padding:24px 26px}

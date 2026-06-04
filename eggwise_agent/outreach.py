@@ -202,3 +202,46 @@ def list_outbox() -> list[dict]:
         except Exception:
             pass
     return list(reversed(_OUTBOX))
+
+
+def _now() -> str:
+    return datetime.now().isoformat(timespec="seconds")
+
+
+def _fs_set_sent(field: str, value: str) -> int:
+    fs = _outbox_fs()
+    if not fs:
+        return 0
+    n = 0
+    try:
+        from google.cloud.firestore_v1.base_query import FieldFilter
+        q = fs.collection(_OUTBOX_COLL).where(filter=FieldFilter(field, "==", value))
+        for doc in q.stream():
+            doc.reference.update({"status": "sent", "sent_at": _now()})
+            n += 1
+    except Exception:
+        pass
+    return n
+
+
+def approve_message(msg_id: str) -> dict:
+    """Approve a queued-for-review message: mark it sent (human-in-the-loop). Updates the
+    in-instance copy and Firestore if configured."""
+    for rec in _OUTBOX:
+        if rec.get("id") == msg_id and rec.get("status") != "sent":
+            rec["status"] = "sent"
+            rec["sent_at"] = _now()
+    _fs_set_sent("id", msg_id)
+    return {"id": msg_id, "status": "sent"}
+
+
+def approve_all() -> dict:
+    """Approve every queued-for-review message at once."""
+    n = 0
+    for rec in _OUTBOX:
+        if rec.get("status") == "queued_for_review":
+            rec["status"] = "sent"
+            rec["sent_at"] = _now()
+            n += 1
+    n += _fs_set_sent("status", "queued_for_review")
+    return {"approved": n}

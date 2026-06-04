@@ -69,6 +69,12 @@ def api_outbox():
     return {"messages": outreach.list_outbox()}
 
 
+@router.post("/api/outbox/approve")
+async def api_outbox_approve(request: Request):
+    b = await request.json()
+    return outreach.approve_message(b["id"]) if b.get("id") else outreach.approve_all()
+
+
 @router.get("/api/patients")
 def api_patients():
     return {"patients": tools.list_patients()}
@@ -341,12 +347,12 @@ __CONSOLE__</style>
   <div class="shell">
     <nav class="side">
       <div class="ntitle">Front desk</div>
+      <button class="navbtn ask" data-view="ask"><span class="ico">&#128172;</span> Ask EggWise</button>
       <button class="navbtn active" data-view="leads"><span class="ico">&#9733;</span> Leads</button>
       <button class="navbtn" data-view="patients"><span class="ico">&#129658;</span> Patients</button>
       <button class="navbtn" data-view="campaigns"><span class="ico">&#128640;</span> Campaigns</button>
       <button class="navbtn" data-view="schedule"><span class="ico">&#128197;</span> Schedule</button>
       <button class="navbtn" data-view="outbox"><span class="ico">&#9993;</span> Outbox</button>
-      <button class="navbtn" data-view="ask"><span class="ico">&#128172;</span> Ask EggWise</button>
       <div class="ntitle" style="margin-top:14px">Reference</div>
       <button class="navbtn" onclick="window.open('/dev-ui/','_blank')"><span class="ico">&#9881;</span> ADK console</button>
     </nav>
@@ -354,12 +360,12 @@ __CONSOLE__</style>
   </div>
 
   <nav class="tabbar">
+    <button class="navbtn ask" data-view="ask"><span class="ico">&#128172;</span>Ask</button>
     <button class="navbtn active" data-view="leads"><span class="ico">&#9733;</span>Leads</button>
     <button class="navbtn" data-view="patients"><span class="ico">&#129658;</span>Patients</button>
     <button class="navbtn" data-view="campaigns"><span class="ico">&#128640;</span>Send</button>
     <button class="navbtn" data-view="schedule"><span class="ico">&#128197;</span>Schedule</button>
     <button class="navbtn" data-view="outbox"><span class="ico">&#9993;</span>Outbox</button>
-    <button class="navbtn" data-view="ask"><span class="ico">&#128172;</span>Ask</button>
   </nav>
 
   <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
@@ -490,12 +496,18 @@ async function doReminder(){const r=await jpost('/api/reminder',{patient_id:$('#
 
 /* OUTBOX */
 async function renderOutbox(){
-  $('#main').innerHTML=`<h1>Outbox</h1><p class="sub">One-click sends are recorded here (demo). Nothing actually leaves the system.</p><ul class="obx" id="obx"></ul>`;
-  const data=await api('/api/outbox');const o=$('#obx');
-  if(!data.messages.length){o.innerHTML='<div class="empty">No messages yet. Use Leads, a patient check-in, or Campaigns.</div>';return;}
-  data.messages.forEach(m=>{const li=document.createElement('li');const st=m.status==='queued_for_review'?'<span class="badge watch">Queued for review</span>':'<span class="badge stable">Sent</span>';
-    li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span>${st} &nbsp; ${esc(m.sent_at)}</span></div>${m.subject?`<div class="osub">${esc(m.subject)}</div>`:''}<div class="obody">${esc(m.body)}</div>`;o.appendChild(li);});
+  $('#main').innerHTML=`<h1>Outbox</h1><p class="sub">Agent-drafted messages wait here as Queued for review. Approve to send. Nothing leaves the system (demo).</p><div id="obtop"></div><ul class="obx" id="obx"></ul>`;
+  const data=await api('/api/outbox');const o=$('#obx');const msgs=data.messages;
+  const nq=msgs.filter(m=>m.status==='queued_for_review').length;
+  $('#obtop').innerHTML=nq?`<div class="crow" style="margin-bottom:12px"><button class="btn teal" onclick="approveAll()">Approve &amp; send all queued (${nq})</button><span class="muted">Drafted by the agent, awaiting your review.</span></div>`:'';
+  if(!msgs.length){o.innerHTML='<div class="empty">No messages yet. Use Ask EggWise, Leads, a patient check-in, or Campaigns.</div>';return;}
+  msgs.forEach(m=>{const li=document.createElement('li');const isq=m.status==='queued_for_review';
+    const st=isq?'<span class="badge watch">Queued for review</span>':'<span class="badge stable">Sent</span>';
+    const act=isq?`<div class="crow" style="margin-top:9px"><button class="btn teal" onclick="approveMsg('${m.id}')">Approve &amp; send</button></div>`:'';
+    li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span>${st} &nbsp; ${esc(m.sent_at)}</span></div>${m.subject?`<div class="osub">${esc(m.subject)}</div>`:''}<div class="obody">${esc(m.body)}</div>${act}`;o.appendChild(li);});
 }
+async function approveMsg(id){await jpost('/api/outbox/approve',{id});toast('Approved and sent');renderOutbox();}
+async function approveAll(){await jpost('/api/outbox/approve',{});toast('All queued approved and sent');renderOutbox();}
 
 /* ASK EGGWISE (chat) */
 function renderAsk(){
