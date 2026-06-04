@@ -34,11 +34,6 @@ app = get_fast_api_app(
 console.register_console(app)
 patient.register_patient(app)
 
-
-@app.get("/healthz")
-def healthz():
-    return {"status": "ok"}
-
 # EggWise egg mark (from the app's eggwise-logo-premium.svg): sage egg + gold check + sparkles.
 LOGO_SVG = (
     '<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" width="56" height="56" aria-hidden="true">'
@@ -182,6 +177,8 @@ async def logout():
 class LoginGate(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         path = request.url.path
+        if path == "/healthz":  # before routing, so the ADK catch-all can't shadow it
+            return Response('{"status": "ok"}', media_type="application/json")
         is_html_get = request.method == "GET" and "text/html" in request.headers.get("accept", "")
         if DEMO_PASS:
             exempt = (path.startswith("/login") or path.startswith("/logout")
