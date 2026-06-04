@@ -14,7 +14,7 @@ from google.adk.agents import Agent
 from google.adk.tools.mcp_tool import MCPToolset, StdioConnectionParams
 from mcp import StdioServerParameters
 
-MODEL = "gemini-2.5-flash"
+from .config import MODEL
 
 _MCP_SERVER = str(Path(__file__).resolve().parent.parent / "mcp_leads_server.py")
 
@@ -56,7 +56,9 @@ growth_agent = Agent(
         "consult. Personalize only on goal, location, and readiness. NEVER put clinical detail "
         "(AMH, BMI, diagnosis) in the message body, even for a consented lead. Call "
         "save_outreach_draft to store it; never send it. A human approves before anything goes out.\n\n"
-        "If the clinic's specialty and location are not given, ask for them first.\n"
+        "If the clinic's specialty and location are not given, use the clinic defaults from "
+        "the SESSION CONTEXT (otherwise egg freezing and IVF in Las Vegas, NV) and proceed, "
+        "stating the assumption in one short line. Do not ask before acting.\n"
         "Consent rule: for a lead with consented_to_share = true, you MAY use and mention its "
         "clinical details (AMH, BMI, prior treatment, diagnosis) in the fit reasoning. For a "
         "lead with consented_to_share = false, do NOT reveal or use clinical details: show only "

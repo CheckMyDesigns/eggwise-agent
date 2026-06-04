@@ -5,16 +5,16 @@ link plus an iCalendar (.ics) body, so the action is genuinely usable by anyone 
 clicks it, and stays human-in-the-loop: nothing is auto-sent. In production these map
 to the clinic's existing Google Calendar OAuth integration in EggWise-Hippa.
 
-All data is synthetic (Vance / Bay Area Fertility Institute).
+All data is synthetic (Vance / Test Fertility Clinic Las Vegas).
 """
 from __future__ import annotations
 
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
 
-# Demo clinic timezone (Bay Area Fertility Institute).
+# Demo clinic timezone (Test Fertility Clinic Las Vegas).
 _TZ = "America/Los_Angeles"
-_CLINIC = "Bay Area Fertility Institute (or telehealth)"
+_CLINIC = "Test Fertility Clinic Las Vegas (or telehealth)"
 
 
 def _parse(date: str, time: str) -> datetime:

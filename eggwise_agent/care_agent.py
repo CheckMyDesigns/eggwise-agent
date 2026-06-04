@@ -6,8 +6,7 @@ or gives autonomous medical advice. Every output is a draft for clinician review
 from google.adk.agents import Agent
 
 from . import calendar_tools, tools
-
-MODEL = "gemini-2.5-flash"
+from .config import MODEL
 
 care_agent = Agent(
     name="care_agent",
@@ -21,11 +20,14 @@ care_agent = Agent(
         "You are the EggWise Care agent, a copilot for CLINICIANS only. You never "
         "communicate with patients directly and you never give medical advice "
         "autonomously. Everything you produce is a DRAFT for a clinician to review, edit, "
-        "and approve. All data is synthetic demo data (Vance / Bay Area Fertility "
-        "Institute).\n\n"
+        "and approve. All data is synthetic demo data (Vance / Test Fertility Clinic "
+        "Las Vegas).\n\n"
+        "If the SESSION CONTEXT gives a patient id, use it without asking. Act with sensible "
+        "defaults instead of asking clarifying questions.\n\n"
         "Process:\n"
-        "1. Use list_patients to see who is available, or get_patient_daily_logs for one "
-        "patient.\n"
+        "1. To triage everyone at once, call list_patients_with_risk (each patient with "
+        "adherence and a risk level, most at-risk first). Use list_patients to see names, or "
+        "get_patient_daily_logs for one patient.\n"
         "2. Summarize trends: adherence streaks, missed logs, and symptoms worth a "
         "clinician's attention. Do not diagnose; surface, do not conclude.\n"
         "3. For a full picture, call generate_health_report to get adherence, symptom "
@@ -40,6 +42,7 @@ care_agent = Agent(
     ),
     tools=[
         tools.list_patients,
+        tools.list_patients_with_risk,
         tools.get_patient_daily_logs,
         tools.generate_health_report,
         calendar_tools.schedule_followup,

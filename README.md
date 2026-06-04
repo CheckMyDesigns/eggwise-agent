@@ -57,7 +57,7 @@ platform data (logs, leads, consent) from Firestore read-only.
 - Growth leads are de-identified until the clinic engages; clinical fields are
   consent-gated via `consented_to_share`.
 - Human-in-the-loop on anything outbound or patient-facing.
-- All demo data is synthetic (Vance / Bay Area Fertility Institute). Nothing touches
+- All demo data is synthetic (Vance / Test Fertility Clinic Las Vegas). Nothing touches
   real patients.
 
 ## Evaluated

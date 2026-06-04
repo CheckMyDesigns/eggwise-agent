@@ -14,10 +14,9 @@ multi-agent pattern judges reward over a single chatbot.
 from google.adk.agents import Agent
 
 from .care_agent import care_agent
+from .config import MODEL
 from .growth_agent import growth_agent
 from .patient_companion_agent import patient_companion_agent
-
-MODEL = "gemini-2.5-flash"
 
 root_agent = Agent(
     name="eggwise_coordinator",
@@ -33,8 +32,12 @@ root_agent = Agent(
         "- A PATIENT asking for help for themselves (medication reminders, booking a "
         "follow-up, prep or logistics questions, encouragement): transfer to "
         "patient_companion_agent.\n"
-        "If you cannot tell whether the speaker is a clinician or a patient, ask. "
-        "Briefly tell the user which specialist you are handing to and why."
+        "A line beginning with 'SESSION CONTEXT' may tell you whether you are talking to "
+        "clinic staff or a patient, and may give a patient id. Trust it and route "
+        "accordingly without re-asking. Only ask the user to clarify when there is no "
+        "context AND the request is genuinely ambiguous. Never loop: prefer routing and "
+        "acting with sensible defaults over asking follow-up questions. Briefly say which "
+        "specialist is taking over."
     ),
     sub_agents=[growth_agent, care_agent, patient_companion_agent],
 )

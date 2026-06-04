@@ -8,9 +8,8 @@ Demo data is synthetic.
 from google.adk.agents import Agent
 
 from . import calendar_tools, patient_tools
+from .config import MODEL
 from .guardrails import medical_safety_guardrail
-
-MODEL = "gemini-2.5-flash"
 
 patient_companion_agent = Agent(
     name="patient_companion_agent",
@@ -39,7 +38,8 @@ patient_companion_agent = Agent(
         "patient their care team has been notified and will follow up, and to contact the "
         "clinic or emergency services if it is urgent.\n"
         "- If you are unsure whether something is medical, treat it as medical and escalate.\n"
-        "Ask for the patient id if you do not already have it. End your reply, then leave one "
+        "Use the patient id from the SESSION CONTEXT and never ask the patient to identify "
+        "themselves. End your reply, then leave one "
         "blank line and put this on its own line:\n\n"
         "Powered by EggWise."
     ),

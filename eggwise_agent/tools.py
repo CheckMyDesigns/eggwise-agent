@@ -1,6 +1,6 @@
 """Tools for the EggWise agents.
 
-All data here is SYNTHETIC demo data (Vance / Bay Area Fertility Institute).
+All data here is SYNTHETIC demo data (Vance / Test Fertility Clinic Las Vegas).
 Nothing in this file touches the production app, Firestore, or real patients.
 This keeps the demo brand-safe and privacy-safe by construction.
 """
@@ -195,6 +195,29 @@ def _render_report_md(name: str, patient_id: str, s: dict, flags: list[str]) -> 
         f"## Flags for clinician review\n{flag_md}\n\n"
         f"> Surfaced for a clinician to review. Not a diagnosis. Requires clinician sign-off before any action."
     )
+
+
+def list_patients_with_risk(days: int = 14) -> list[dict]:
+    """Triage all demo patients at once (Care). Returns each patient with adherence,
+    current streak, doses missed, risk flags, and a risk_level (high, watch, stable),
+    sorted most at-risk first. Use this to see who needs attention without opening each
+    patient one by one. Surfaces concerns for clinician review; does not diagnose.
+    """
+    out: list[dict] = []
+    for p in _load("sample_patients.json"):
+        s = _summarize_logs(p.get("logs", [])[:days])
+        flags = _risk_flags(s)
+        level = "high" if len(flags) >= 2 else ("watch" if flags else "stable")
+        out.append({
+            "id": p["id"], "name": p["name"],
+            "adherence_rate": s["adherence_rate"],
+            "current_streak_days": s["current_streak_days"],
+            "doses_missed": s["doses_missed"],
+            "risk_flags": flags, "risk_level": level,
+        })
+    order = {"high": 0, "watch": 1, "stable": 2}
+    out.sort(key=lambda x: (order[x["risk_level"]], -x["doses_missed"]))
+    return out
 
 
 def generate_health_report(patient_id: str, days: int = 30) -> dict:

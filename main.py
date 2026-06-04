@@ -14,7 +14,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from google.adk.cli.fast_api import get_fast_api_app
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from eggwise_agent import console
+from eggwise_agent import console, patient
 
 AGENTS_DIR = os.path.dirname(os.path.abspath(__file__))
 DEMO_USER = os.environ.get("DEMO_USER", "eggwise")
@@ -30,8 +30,14 @@ app = get_fast_api_app(
     use_local_storage=False,
 )
 
-# Branded front-desk console (the screen judges see) + its JSON API.
+# Branded clinic front-desk console + patient companion view + shared JSON API.
 console.register_console(app)
+patient.register_patient(app)
+
+
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
 
 # EggWise egg mark (from the app's eggwise-logo-premium.svg): sage egg + gold check + sparkles.
 LOGO_SVG = (
@@ -178,7 +184,8 @@ class LoginGate(BaseHTTPMiddleware):
         path = request.url.path
         is_html_get = request.method == "GET" and "text/html" in request.headers.get("accept", "")
         if DEMO_PASS:
-            exempt = path.startswith("/login") or path.startswith("/logout") or path == "/favicon.ico"
+            exempt = (path.startswith("/login") or path.startswith("/logout")
+                      or path in ("/favicon.ico", "/healthz"))
             if not exempt and request.cookies.get(COOKIE) != TOKEN:
                 if is_html_get:
                     return RedirectResponse("/login", status_code=303)

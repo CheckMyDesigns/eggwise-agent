@@ -67,22 +67,28 @@ def detail_view(lead: dict) -> dict:
 
 def rank_leads(specialty: str = "", location: str = "") -> list[dict]:
     """Rank prospective patients by fit. Deterministic so the board is stable:
-    Wellness Score, plus small bonuses for a goal that matches the clinic specialty
-    and a location near the clinic. Returns de-identified views with fit_score + reason.
+    Wellness Score, plus a goal-matches-specialty bonus and a location bonus
+    (same city, then same state). Returns de-identified views with fit_score + reason.
     """
     spec = (specialty or "").lower().strip()
     loc = (location or "").lower().strip()
+    loc_city = loc.split(",")[0].strip()
+    loc_state = loc.split(",")[-1].strip() if "," in loc else ""
     ranked: list[dict] = []
     for lead in load_leads():
         score = int(lead.get("wellness_score", 0) or 0)
         reasons = [f"Wellness Score {lead.get('wellness_score')}"]
         goal = (lead.get("goal") or "").lower()
         if spec and (spec in goal or goal in spec):
-            score += 8
+            score += 10
             reasons.append(f"goal matches {specialty}")
-        if loc and loc.split(",")[0] in (lead.get("location") or "").lower():
+        ll = (lead.get("location") or "").lower()
+        if loc_city and loc_city in ll:
+            score += 12
+            reasons.append(f"in {location}")
+        elif loc_state and ll.endswith(loc_state):
             score += 6
-            reasons.append(f"near {location}")
+            reasons.append(f"in-state ({loc_state.upper()})")
         item = public_view(lead)
         item["fit_score"] = min(score, 100)
         item["fit_reason"] = ", ".join(reasons)
