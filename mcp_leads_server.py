@@ -49,7 +49,14 @@ def _load_firestore() -> list[dict]:
 
 
 def _load() -> list[dict]:
-    return _load_firestore() if _BACKEND == "firestore" else _load_json()
+    if _BACKEND == "firestore":
+        try:
+            leads = _load_firestore()
+            if leads:
+                return leads
+        except Exception:
+            pass  # fall back to bundled synthetic JSON if Firestore is unavailable
+    return _load_json()
 
 
 @mcp.tool()
