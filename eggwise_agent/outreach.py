@@ -86,6 +86,47 @@ def draft_outreach(lead: dict, clinic: str = "your clinic", specialty: str = "",
         return _template(lead, clinic, specialty, chan)
 
 
+def draft_checkin(patient_name: str, summary: dict, clinic: str = "your clinic",
+                  channel: str = "in-app") -> dict:
+    """Draft a warm, NON-CLINICAL patient check-in from the clinic, personalized on
+    engagement only (adherence, streak, missed doses). It never references or interprets
+    symptoms and gives no medical advice. Ends noting clinician review. Gemini + template
+    fallback. Returns {channel, subject, body}.
+    """
+    name = (patient_name or "there").split(" (")[0]
+    adh = int(round((summary.get("adherence_rate") or 0) * 100))
+    streak = summary.get("current_streak_days") or 0
+    missed = summary.get("doses_missed") or 0
+    tone = ("Gently acknowledge it has been a busy stretch with a couple of missed doses and offer support."
+            if missed > 0 else f"Warmly celebrate their consistency (a {streak}-day streak).")
+    prompt = (
+        f"Write a SHORT, warm check-in {channel} from {clinic} to a fertility patient named {name}. "
+        f"{tone} Invite them to reply or book time if anything has come up. "
+        f"Do NOT give medical advice, do NOT mention or interpret any symptoms, do NOT include lab "
+        f"values. End with a final line exactly: This message requires clinician review before sending.\n"
+        f"Return \"Subject: <subject>\" on the first line, a blank line, then the body."
+    )
+    try:
+        text = (_genai().models.generate_content(model=_MODEL, contents=prompt).text or "").strip()
+        if not text:
+            raise ValueError("empty")
+        subject, body = "", text
+        if text.lower().startswith("subject:"):
+            first, _, rest = text.partition("\n")
+            subject = first.split(":", 1)[1].strip()
+            body = rest.strip()
+        if not subject:
+            subject = f"Checking in from {clinic}"
+        return {"channel": channel, "subject": subject, "body": body}
+    except Exception:
+        opener = ("We noticed a couple of missed doses recently and want to make sure you have what you need."
+                  if missed > 0 else f"You have kept a wonderful {streak}-day streak, really nice work.")
+        body = (f"Hi {name},\n\nWe're checking in from {clinic}. {opener} If anything has come up or you "
+                f"have questions, just reply and our team will help. We're with you on this journey.\n\n"
+                f"This message requires clinician review before sending.")
+        return {"channel": channel, "subject": f"Checking in from {clinic}", "body": body}
+
+
 # --------------------------------------------------------------------------
 # Simulated outbox (in-memory, per instance). Nothing actually sends.
 # --------------------------------------------------------------------------

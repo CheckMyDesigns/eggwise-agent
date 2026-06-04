@@ -19,12 +19,21 @@ def get_my_adherence(patient_id: str, days: int = 14) -> dict:
         if p.get("id") == patient_id:
             logs = p.get("logs", [])[:days]
             missed = [entry["date"] for entry in logs if not entry.get("meds_taken", False)]
+            streak = 0
+            for entry in logs:  # leading run of taken doses (newest first)
+                if entry.get("meds_taken"):
+                    streak += 1
+                else:
+                    break
+            moods = [e["mood"] for e in logs if isinstance(e.get("mood"), (int, float))]
             return {
                 "id": p["id"],
                 "name": p["name"],
                 "days_reviewed": len(logs),
                 "doses_missed": len(missed),
                 "missed_dates": missed,
+                "current_streak_days": streak,
+                "avg_mood": round(sum(moods) / len(moods), 1) if moods else None,
                 "on_track": len(missed) == 0,
             }
     return {}

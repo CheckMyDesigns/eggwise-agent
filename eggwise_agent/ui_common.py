@@ -13,6 +13,8 @@ LOGO_SVG = (
     "</svg>"
 )
 
+ATTRIB = '<div class="attrib">&#129666; Information from <b>EggWise: AI Fertility Tracker</b></div>'
+
 FONT_LINK = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">'
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -84,6 +86,8 @@ BASE_CSS = r"""
   .badge.watch{background:rgba(233,185,73,.16);color:var(--warn)}
   .badge.stable{background:rgba(78,205,196,.13);color:var(--ok)}
   .muted{color:var(--ink-mute);font-size:11.5px}
+  .attrib{display:flex;align-items:center;gap:6px;color:var(--ink-mute);font-size:11.5px;margin:18px 0 4px}
+  .attrib b{color:var(--teal-lt);font-weight:700}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);max-width:580px;margin-bottom:16px}
   .panel h3{margin:0 0 12px;font-family:'Poppins',sans-serif;font-weight:700;font-size:16px}
   .result{margin-top:14px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--teal-tint);font-size:13px}
@@ -100,6 +104,22 @@ BASE_CSS = r"""
   .cmd input{flex:1;font:inherit;font-size:14px;padding:12px 15px;border:1px solid var(--line2);border-radius:12px;background:var(--card2);color:var(--ink)}
   .cmd input::placeholder{color:var(--ink-mute)}
   .cmd input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-tint)}
+  /* chat (shared by clinic Ask EggWise + patient Chat) */
+  .chatwrap{display:flex;flex-direction:column;min-height:calc(100dvh - 175px)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .chip2{font:inherit;font-size:12px;font-weight:700;color:var(--teal-lt);background:var(--teal-tint);border:0;border-radius:20px;padding:7px 12px;cursor:pointer;text-align:left}
+  .chip2:hover{filter:brightness(1.12)}
+  .tx{flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:12px}
+  .msg{max-width:88%;padding:11px 15px;border-radius:16px;font-size:14px;line-height:1.55}
+  .msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#fff;border-bottom-right-radius:5px;white-space:pre-wrap}
+  .msg.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:5px;max-width:94%}
+  .msg.bot h2{font-family:'Poppins',sans-serif;font-size:14px;color:var(--teal-lt);margin:10px 0 5px}
+  .msg.bot h3{font-family:'Poppins',sans-serif;font-size:13px;color:var(--ink);margin:8px 0 4px}
+  .msg.bot p{margin:6px 0}.msg.bot ul{margin:6px 0;padding-left:20px}.msg.bot li{margin:3px 0}
+  .msg.bot hr{border:0;border-top:1px solid var(--line2);margin:12px 0}.msg.bot b{color:var(--ink)}
+  .chatin{position:sticky;bottom:0;display:flex;gap:10px;padding:10px 0 4px;background:var(--bg)}
+  .chatin input{flex:1;font:inherit;font-size:15px;padding:12px 15px;border:1px solid var(--line2);border-radius:12px;background:var(--card2);color:var(--ink)}
+  .chatin input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-tint)}
   /* toast + spinner */
   #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--raised);color:var(--ink);padding:11px 20px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:all .25s;z-index:90;box-shadow:var(--shadow);border:1px solid var(--line2)}
   #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -115,8 +135,10 @@ BASE_CSS = r"""
     main{padding:16px 14px 20px}
     .row2{grid-template-columns:1fr}
     .cmd input{font-size:16px}
-    .tabbar{display:flex;justify-content:space-around;align-items:center;background:var(--card);border-top:1px solid var(--line);padding:6px 4px 8px}
-    .tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;color:var(--ink-mute);font:inherit;font-size:10px;font-weight:700;padding:5px 10px;border-radius:10px;cursor:pointer}
+    .chatin input{font-size:16px}
+    .chatwrap{min-height:calc(100dvh - 215px)}
+    .tabbar{display:flex;overflow-x:auto;align-items:center;background:var(--card);border-top:1px solid var(--line);padding:6px 4px 8px}
+    .tabbar button{flex:1 0 auto;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;color:var(--ink-mute);font:inherit;font-size:10px;font-weight:700;padding:5px 8px;border-radius:10px;cursor:pointer}
     .tabbar button .ico{font-size:17px}
     .tabbar button.active{color:var(--teal-lt)}
     .panel{max-width:none}
