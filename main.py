@@ -94,6 +94,8 @@ LOGIN_HTML = """<!doctype html>
     font-size:13px; padding:10px 12px; border-radius:10px; margin-bottom:18px; }
   .foot{ margin-top:22px; text-align:center; font-size:11.5px; color:#6c7d7a; }
   .foot b{ color:var(--muted); font-weight:600; }
+  .foot a{ color:var(--teal); text-decoration:none; font-weight:600; }
+  .foot a:hover{ color:var(--gold); }
   .card>*{ opacity:0; transform:translateY(8px); animation:rise .6s cubic-bezier(.2,.7,.2,1) forwards; }
   .card>*:nth-child(1){ animation-delay:.05s } .card>*:nth-child(2){ animation-delay:.11s }
   .card>*:nth-child(3){ animation-delay:.17s } .card>*:nth-child(4){ animation-delay:.23s }
@@ -122,7 +124,7 @@ LOGIN_HTML = """<!doctype html>
       <input id="p" name="password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
     </div>
     <button type="submit">Enter</button>
-    <div class="foot">Secure access &middot; <b>EggWise</b></div>
+    <div class="foot">Secure access &middot; <a href="https://myeggwise.com" target="_blank" rel="noopener">MyEggWise.com</a></div>
   </form>
 </body>
 </html>""".replace("__LOGO__", LOGO_SVG)
