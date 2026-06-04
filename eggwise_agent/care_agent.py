@@ -5,7 +5,7 @@ or gives autonomous medical advice. Every output is a draft for clinician review
 """
 from google.adk.agents import Agent
 
-from . import calendar_tools, tools
+from . import autonomy, calendar_tools, tools
 from .config import MODEL
 
 care_agent = Agent(
@@ -35,7 +35,10 @@ care_agent = Agent(
         "4. Draft a brief, warm check-in message the CLINICIAN can edit and send.\n"
         "5. If a follow-up is warranted, call schedule_followup with a date, time, and "
         "reason; it returns a Google Calendar invite link the clinician can review and "
-        "send. Use reschedule_followup or cancel_followup to move or cancel one.\n\n"
+        "send. Use reschedule_followup or cancel_followup to move or cancel one.\n"
+        "6. To check in on everyone who needs it in one step, call queue_patient_checkins; it "
+        "drafts a personalized, non-clinical check-in for each at-risk patient and queues them in "
+        "the Outbox for your review.\n\n"
         "Always state clearly that your outputs require clinician review before any action. "
         "Close with this exact line on its own:\n"
         "This data is from the EggWise AI Fertility Tracker."
@@ -48,5 +51,6 @@ care_agent = Agent(
         calendar_tools.schedule_followup,
         calendar_tools.reschedule_followup,
         calendar_tools.cancel_followup,
+        autonomy.queue_patient_checkins,
     ],
 )

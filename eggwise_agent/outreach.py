@@ -128,10 +128,35 @@ def draft_checkin(patient_name: str, summary: dict, clinic: str = "your clinic",
 
 
 # --------------------------------------------------------------------------
-# Simulated outbox (in-memory, per instance). Nothing actually sends.
+# Simulated outbox. Nothing actually sends. Persists to Firestore when the
+# Firestore backend is configured (survives Cloud Run cold starts and scaling);
+# falls back to an in-memory list locally or if Firestore is unavailable.
 # --------------------------------------------------------------------------
 _OUTBOX: list[dict] = []
 _seq = 0
+_OUTBOX_COLL = "agent_outbox"
+
+
+def _outbox_fs():
+    import os
+    if os.environ.get("EGGWISE_LEADS_BACKEND", "").lower() != "firestore":
+        return None
+    try:
+        from google.cloud import firestore
+        return firestore.Client(
+            project=os.environ.get("EGGWISE_LEADS_PROJECT") or os.environ.get("GOOGLE_CLOUD_PROJECT"))
+    except Exception:
+        return None
+
+
+def _persist(rec: dict) -> None:
+    _OUTBOX.append(rec)  # always keep an in-instance copy
+    fs = _outbox_fs()
+    if fs:
+        try:
+            fs.collection(_OUTBOX_COLL).add(dict(rec))
+        except Exception:
+            pass  # durability is best-effort; the in-memory copy still serves this instance
 
 
 def send_outreach(lead_id: str, channel: str, subject: str, body: str, to: str = "") -> dict:
@@ -148,9 +173,32 @@ def send_outreach(lead_id: str, channel: str, subject: str, body: str, to: str =
         "status": "sent",
         "sent_at": datetime.now().isoformat(timespec="seconds"),
     }
-    _OUTBOX.append(rec)
+    _persist(rec)
+    return rec
+
+
+def queue_message(recipient_id: str, channel: str, subject: str, body: str, to: str = "") -> dict:
+    """Queue a drafted message for human review (status queued_for_review). It appears in the
+    Outbox and is never auto-sent; a person approves before anything goes out."""
+    global _seq
+    _seq += 1
+    rec = {
+        "id": f"msg-{_seq:03d}", "lead_id": recipient_id, "channel": channel,
+        "subject": subject, "body": body, "to": to or "(recipient)",
+        "status": "queued_for_review",
+        "sent_at": datetime.now().isoformat(timespec="seconds"),
+    }
+    _persist(rec)
     return rec
 
 
 def list_outbox() -> list[dict]:
+    fs = _outbox_fs()
+    if fs:
+        try:
+            docs = [d.to_dict() for d in fs.collection(_OUTBOX_COLL).stream()]
+            if docs:
+                return sorted(docs, key=lambda r: r.get("sent_at", ""), reverse=True)
+        except Exception:
+            pass
     return list(reversed(_OUTBOX))

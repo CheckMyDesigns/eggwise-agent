@@ -137,8 +137,8 @@ BASE_CSS = r"""
     .cmd input{font-size:16px}
     .chatin input{font-size:16px}
     .chatwrap{min-height:calc(100dvh - 215px)}
-    .tabbar{display:flex;overflow-x:auto;align-items:center;background:var(--card);border-top:1px solid var(--line);padding:6px 4px 8px}
-    .tabbar button{flex:1 0 auto;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;color:var(--ink-mute);font:inherit;font-size:10px;font-weight:700;padding:5px 8px;border-radius:10px;cursor:pointer}
+    .tabbar{display:flex;overflow:hidden;align-items:stretch;background:var(--card);border-top:1px solid var(--line);padding:6px 2px 8px}
+    .tabbar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:transparent;color:var(--ink-mute);font:inherit;font-size:9.5px;font-weight:700;padding:5px 2px;border-radius:10px;cursor:pointer;white-space:nowrap}
     .tabbar button .ico{font-size:17px}
     .tabbar button.active{color:var(--teal-lt)}
     .panel{max-width:none}

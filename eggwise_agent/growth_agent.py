@@ -14,6 +14,7 @@ from google.adk.agents import Agent
 from google.adk.tools.mcp_tool import MCPToolset, StdioConnectionParams
 from mcp import StdioServerParameters
 
+from . import autonomy
 from .config import MODEL
 
 _MCP_SERVER = str(Path(__file__).resolve().parent.parent / "mcp_leads_server.py")
@@ -55,7 +56,10 @@ growth_agent = Agent(
         "sentences why this clinic is a great fit for that patient and invites them to book a "
         "consult. Personalize only on goal, location, and readiness. NEVER put clinical detail "
         "(AMH, BMI, diagnosis) in the message body, even for a consented lead. Call "
-        "save_outreach_draft to store it; never send it. A human approves before anything goes out.\n\n"
+        "save_outreach_draft to store it; never send it. A human approves before anything goes out.\n"
+        "6. To reach the whole top of the funnel in one step, call queue_lead_outreach; it drafts "
+        "personalized outreach for the top prospective patients and queues them in the Outbox for "
+        "clinic review.\n\n"
         "If the clinic's specialty and location are not given, use the clinic defaults from "
         "the SESSION CONTEXT (otherwise egg freezing and IVF in Las Vegas, NV) and proceed, "
         "stating the assumption in one short line. Do not ask before acting.\n"
@@ -68,5 +72,5 @@ growth_agent = Agent(
         "ranked summary at the end, then close with this exact line on its own:\n"
         "This data is from the EggWise AI Fertility Tracker."
     ),
-    tools=[leads_toolset],
+    tools=[leads_toolset, autonomy.queue_lead_outreach],
 )

@@ -493,7 +493,8 @@ async function renderOutbox(){
   $('#main').innerHTML=`<h1>Outbox</h1><p class="sub">One-click sends are recorded here (demo). Nothing actually leaves the system.</p><ul class="obx" id="obx"></ul>`;
   const data=await api('/api/outbox');const o=$('#obx');
   if(!data.messages.length){o.innerHTML='<div class="empty">No messages yet. Use Leads, a patient check-in, or Campaigns.</div>';return;}
-  data.messages.forEach(m=>{const li=document.createElement('li');li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span>${esc(m.sent_at)}</span></div>${m.subject?`<div class="osub">${esc(m.subject)}</div>`:''}<div class="obody">${esc(m.body)}</div>`;o.appendChild(li);});
+  data.messages.forEach(m=>{const li=document.createElement('li');const st=m.status==='queued_for_review'?'<span class="badge watch">Queued for review</span>':'<span class="badge stable">Sent</span>';
+    li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span>${st} &nbsp; ${esc(m.sent_at)}</span></div>${m.subject?`<div class="osub">${esc(m.subject)}</div>`:''}<div class="obody">${esc(m.body)}</div>`;o.appendChild(li);});
 }
 
 /* ASK EGGWISE (chat) */

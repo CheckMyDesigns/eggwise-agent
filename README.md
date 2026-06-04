@@ -14,9 +14,12 @@ After signing in you land on the **EggWise Agent front-desk console**: a branded
 does what a clinic front desk does. Find and rank prospective patients by fit, draft a
 personalized, consent-safe outreach message and send it with one click, schedule
 follow-ups and medication reminders (with real add-to-calendar links), open a patient for
-an adherence and symptom report with clinician-review flags, and a command bar that drives
-the live multi-agent coordinator in natural language. The raw ADK developer chat stays
-available at `/dev-ui/`.
+an adherence and symptom report with clinician-review flags, and an Ask EggWise chat that
+drives the live multi-agent coordinator in natural language. A **Campaigns** view (and the
+agent itself, via `queue_patient_checkins` / `queue_lead_outreach`) drafts personalized
+check-ins for at-risk patients or outreach for top leads in bulk, queued for one-click
+review and send. A **patient Companion** view (Clinic/Patient switch) gives patients Home,
+Chat, Reminders, and Learn. The raw ADK developer chat stays available at `/dev-ui/`.
 
 ## What it does
 One coordinator routes every request to three specialists:
@@ -124,6 +127,8 @@ Dockerfile                    Cloud Run image
 - [x] Scheduling and medication reminders with real add-to-calendar links
 - [x] Patient health reports (adherence, symptom trend, mood, risk flags)
 - [x] Branded front-desk console UI + command bar over the live coordinator
+- [x] Patient Companion view (Home, Chat, Reminders, Learn) + clinic/patient session context
+- [x] Autonomous batch messaging: the agent drafts + queues personalized check-ins / outreach
 - [x] MCP server (JSON / Firestore backend, stdio / HTTP)
 - [x] Layered medical-safety guardrail + audit trail
 - [x] Eval suite (100% routing, 100% guardrail catch)
