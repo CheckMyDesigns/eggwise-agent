@@ -15,4 +15,5 @@ make_arch_pptx.py
 make_stripe_assets.py
 debug_guardrail.py
 test_growth.py
+test_login.py
 SUBMISSION.md

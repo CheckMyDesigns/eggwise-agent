@@ -17,8 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY eggwise_agent ./eggwise_agent
 COPY mcp_leads_server.py ./
+COPY main.py ./
 COPY data ./data
 
 # Cloud Run injects $PORT (default 8080). adk web falls back to in-memory
 # sessions when the agents dir is read-only, which is the Cloud Run case.
-CMD ["sh", "-c", "adk web --host 0.0.0.0 --port ${PORT:-8080} /app"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"]
