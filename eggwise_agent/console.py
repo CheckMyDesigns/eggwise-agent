@@ -26,7 +26,13 @@ router = APIRouter()
 
 @router.get("/api/leads")
 def api_leads(specialty: str = "", location: str = ""):
-    return {"clinic": CLINIC, "leads": leads_data.rank_leads(specialty, location)}
+    all_leads = leads_data.load_leads()
+    return {
+        "clinic": CLINIC,
+        "leads": leads_data.rank_leads(specialty, location),
+        "specialties": sorted({(l.get("goal") or "").strip() for l in all_leads if l.get("goal")}),
+        "locations": sorted({(l.get("location") or "").strip() for l in all_leads if l.get("location")}),
+    }
 
 
 @router.get("/api/leads/{lead_id}")
@@ -268,9 +274,10 @@ def register_console(app):
 _CONSOLE_CSS = r"""
   .filters{max-width:680px;margin-bottom:16px}
   .frow{display:flex;gap:10px;margin-bottom:10px}
-  .frow input{flex:1;min-width:0;font:inherit;font-size:14px;padding:11px 13px;border:1px solid var(--line2);border-radius:10px;background:var(--card2);color:var(--ink)}
+  .frow input,.frow select{flex:1;min-width:0;font:inherit;font-size:14px;padding:11px 13px;border:1px solid var(--line2);border-radius:10px;background:var(--card2);color:var(--ink)}
   .frow input::placeholder{color:var(--ink-mute)}
-  .frow input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-tint)}
+  .frow input:focus,.frow select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-tint)}
+  @media (max-width:760px){.frow{flex-direction:column}}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(244px,1fr));gap:14px}
   .lead{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:transform .12s,border-color .12s}
   .lead:hover{transform:translateY(-2px);border-color:var(--teal)}
@@ -403,13 +410,15 @@ function render(v){({leads:renderLeads,patients:renderPatients,campaigns:renderC
 /* LEADS */
 async function renderLeads(){
   $('#main').innerHTML=`<h1>Prospective patients</h1><p class="sub">Lead generation for ${esc(CLINIC)}. Ranked by fit. Click a patient for detail and one-click outreach.</p>
-   <div class="filters"><div class="frow">
-     <input id="fSpec" placeholder="Clinic specialty (e.g. IVF, egg freezing)" value="${esc(SPECIALTY)}" onkeydown="if(event.key==='Enter')applyFilters()">
-     <input id="fLoc" placeholder="Clinic location (e.g. Las Vegas, NV)" value="${esc(LOCATION)}" onkeydown="if(event.key==='Enter')applyFilters()">
-   </div><button class="btn teal" onclick="applyFilters()">Re-rank</button></div>
+   <div id="filters"></div>
    <div class="grid" id="leadGrid"><div class="empty">Loading leads <span class="spin"></span></div></div><div id="att"></div>`;
   const data=await api(`/api/leads?specialty=${encodeURIComponent(SPECIALTY)}&location=${encodeURIComponent(LOCATION)}`);
-  CLINIC=data.clinic||CLINIC;const g=$('#leadGrid');g.innerHTML='';
+  CLINIC=data.clinic||CLINIC;
+  const opt=(v,sel,label)=>`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(label!=null?label:v)}</option>`;
+  const specs=opt('',SPECIALTY,'Any specialty')+(data.specialties||[]).map(v=>opt(v,SPECIALTY)).join('');
+  const locs=opt('',LOCATION,'Any location')+(data.locations||[]).map(v=>opt(v,LOCATION)).join('');
+  $('#filters').innerHTML=`<div class="filters"><div class="frow"><select id="fSpec" onchange="applyFilters()">${specs}</select><select id="fLoc" onchange="applyFilters()">${locs}</select></div><button class="btn teal" onclick="applyFilters()">Re-rank</button></div>`;
+  const g=$('#leadGrid');g.innerHTML='';
   data.leads.forEach(L=>{const cons=L.consented_to_share;const el=document.createElement('div');el.className='lead';el.onclick=()=>openLead(L.id);
     el.innerHTML=`<div class="top"><div><div class="alias">${esc(L.display||L.alias)}</div><div class="meta">${L.age}, ${esc(L.location)}</div></div>
       <div class="score ${scoreClass(L.fit_score)}">${L.fit_score}<small>fit</small></div></div>
