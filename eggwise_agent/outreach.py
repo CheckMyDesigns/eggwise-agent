@@ -142,9 +142,8 @@ def _outbox_fs():
     if os.environ.get("EGGWISE_LEADS_BACKEND", "").lower() != "firestore":
         return None
     try:
-        from google.cloud import firestore
-        return firestore.Client(
-            project=os.environ.get("EGGWISE_LEADS_PROJECT") or os.environ.get("GOOGLE_CLOUD_PROJECT"))
+        from . import leads_data
+        return leads_data.firestore_client()  # reuse the cached client
     except Exception:
         return None
 

@@ -20,14 +20,25 @@ _PUBLIC_FIELDS = ("id", "alias", "age", "location", "goal", "wellness_score",
 _CLINICAL_FIELDS = ("amh", "bmi", "prior_treatment", "diagnosis")
 
 
-def _load_firestore() -> list[dict]:
-    from google.cloud import firestore
+_FS_CLIENT = None
+_LEADS_CACHE = None
 
-    project = os.environ.get("EGGWISE_LEADS_PROJECT") or os.environ.get("GOOGLE_CLOUD_PROJECT")
+
+def firestore_client():
+    """Return a cached Firestore client. Creating one per request (auth + connection
+    setup) is the slow part, so we build it once per process."""
+    global _FS_CLIENT
+    if _FS_CLIENT is None:
+        from google.cloud import firestore
+        _FS_CLIENT = firestore.Client(
+            project=os.environ.get("EGGWISE_LEADS_PROJECT") or os.environ.get("GOOGLE_CLOUD_PROJECT"))
+    return _FS_CLIENT
+
+
+def _load_firestore() -> list[dict]:
     collection = os.environ.get("EGGWISE_LEADS_COLLECTION", "patient_leads")
-    client = firestore.Client(project=project)
     out: list[dict] = []
-    for doc in client.collection(collection).stream():
+    for doc in firestore_client().collection(collection).stream():
         rec = doc.to_dict() or {}
         rec.setdefault("id", doc.id)
         out.append(rec)
@@ -35,16 +46,22 @@ def _load_firestore() -> list[dict]:
 
 
 def load_leads() -> list[dict]:
-    """Load raw lead records from the configured backend, falling back to JSON."""
+    """Load lead records once and cache them. Leads are static reference data, so
+    re-reading the backend on every request (and on every re-rank) just adds latency."""
+    global _LEADS_CACHE
+    if _LEADS_CACHE is not None:
+        return _LEADS_CACHE
+    leads = None
     if os.environ.get("EGGWISE_LEADS_BACKEND", "json").lower() == "firestore":
         try:
-            leads = _load_firestore()
-            if leads:
-                return leads
+            leads = _load_firestore() or None
         except Exception:
-            pass  # fall back to synthetic JSON if Firestore is unavailable
-    with open(_DATA / "sample_patient_leads.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+            leads = None
+    if leads is None:
+        with open(_DATA / "sample_patient_leads.json", "r", encoding="utf-8") as f:
+            leads = json.load(f)
+    _LEADS_CACHE = leads
+    return _LEADS_CACHE
 
 
 def public_view(lead: dict) -> dict:
