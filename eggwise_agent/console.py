@@ -243,7 +243,7 @@ async def api_agent(request: Request):
         runner = _get_runner()
         session = await runner.session_service.create_session(app_name="console", user_id="console")
         msg = types.Content(role="user", parts=[types.Part(text=preamble + message)])
-        route, used, final = None, [], ""
+        route, used, final, draft = None, [], "", None
         async for event in runner.run_async(user_id="console", session_id=session.id, new_message=msg):
             if not (event.content and event.content.parts):
                 continue
@@ -254,9 +254,18 @@ async def api_agent(request: Request):
                         route = (getattr(fc, "args", {}) or {}).get("agent_name", route)
                     else:
                         used.append(fc.name)
+                fr = getattr(part, "function_response", None)
+                if fr and getattr(fr, "name", None) == "queue_checkin":
+                    resp = getattr(fr, "response", None)
+                    if isinstance(resp, dict):
+                        cand = resp.get("draft")
+                        if not cand and isinstance(resp.get("result"), dict):
+                            cand = resp["result"].get("draft")
+                        if cand:
+                            draft = cand
                 if getattr(part, "text", None) and part.text.strip():
                     final = part.text.strip()
-        return {"route": route, "tools": used, "text": final}
+        return {"route": route, "tools": used, "text": final, "draft": draft}
     except Exception as e:
         return {"error": "agent_unavailable", "detail": str(e)[:300]}
 
@@ -340,6 +349,7 @@ _CONSOLE_CSS = r"""
   .ccard input,.ccard textarea{width:100%;font:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;background:var(--card2);color:var(--ink);margin-top:8px;resize:vertical}
   .ccard textarea{min-height:120px;line-height:1.5}
   .ccard:focus-within{border-color:var(--teal)}
+  .cardrow{align-self:stretch;width:100%}
   .cmodal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%);width:min(420px,92vw);background:var(--bg2);border:1px solid var(--line2);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);z-index:60;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
   .cmodal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
   .cmtitle{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;margin-bottom:8px}
@@ -553,14 +563,17 @@ function renderAsk(){
   if(!CHAT.length)CHAT.push({role:'bot',html:"Hi, I'm the EggWise Agent for "+esc(CLINIC)+". I can find and rank leads, draft outreach, triage patients, draft check-ins, and schedule. What would you like to do?"});
   drawChat();$('#chatForm').addEventListener('submit',e=>{e.preventDefault();const v=$('#ci2').value.trim();if(v){$('#ci2').value='';ask(v);}});$('#ci2').focus();
 }
-function drawChat(){const tx=$('#tx');if(!tx)return;tx.innerHTML=CHAT.map(m=>`<div class="msg ${m.role==='me'?'me':'bot'}">${m.role==='me'?esc(m.html):m.html}</div>`).join('');$('#main').scrollTop=$('#main').scrollHeight;}
+function drawChat(){const tx=$('#tx');if(!tx)return;tx.innerHTML=CHAT.map(m=> m.role==='card'?`<div class="cardrow">${m.html}</div>`:`<div class="msg ${m.role==='me'?'me':'bot'}">${m.role==='me'?esc(m.html):m.html}</div>`).join('');$('#main').scrollTop=$('#main').scrollHeight;}
 async function ask(text){
   if(!$('#tx'))go('ask');
   CHAT.push({role:'me',html:text});const idx=CHAT.push({role:'bot',html:'<span class="spin"></span>'})-1;drawChat();
   const r=await jpost('/api/agent',{message:text,audience:'clinic'});
   CHAT[idx].html=r.error?`<span class="muted">Agent unavailable here (${esc(r.error)}). The console actions still work.</span>`:mdToHtml(r.text||'(no response)');
+  if(r.draft&&r.draft.id){const d=r.draft;const sub=d.subject?`<input id="ds_${d.id}" value="${esc(d.subject)}">`:'';
+    CHAT.push({role:'card',draftId:d.id,html:`<div class="ccard"><div class="ch"><span class="nm">Check-in for ${esc(d.to)}</span><span class="chan">${esc(d.channel)}</span></div>${sub}<textarea id="db_${d.id}">${esc(d.body)}</textarea><div class="crow"><button class="btn teal" onclick="sendInlineDraft('${d.id}')">Send</button><span class="muted">Edit above, or find it in the Outbox.</span></div></div>`});}
   drawChat();
 }
+async function sendInlineDraft(id){const sb=$('#ds_'+id),bb=$('#db_'+id);const p={id};if(sb)p.subject=sb.value;if(bb)p.body=bb.value;await jpost('/api/outbox/approve',p);toast('Sent');const e=CHAT.find(m=>m.draftId===id);if(e){e.role='bot';e.html='<b>Sent.</b> Recorded in the Outbox.';delete e.draftId;}drawChat();}
 
 /* markdown -> cards */
 function mdToHtml(md){const lines=(md||'').split('\n');let out='';let inList=false;const flush=()=>{if(inList){out+='</ul>';inList=false;}};

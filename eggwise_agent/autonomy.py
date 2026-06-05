@@ -45,10 +45,12 @@ def queue_checkin(patient_id: str, channel: str = "in-app") -> dict:
     if "error" in rep:
         return rep
     d = outreach.draft_checkin(rep["name"], rep, config.CLINIC_NAME, channel)
-    outreach.queue_message(patient_id, channel, d["subject"], d["body"], to=rep["name"])
+    rec = outreach.queue_message(patient_id, channel, d["subject"], d["body"], to=rep["name"])
     return {
         "queued": 1, "patient": rep["name"], "channel": channel, "status": "queued_for_review",
-        "note": "Drafted and queued in the Outbox. Open the Outbox to review, edit, and send it.",
+        "note": "Drafted and queued. The clinician can edit and send it in the chat or the Outbox.",
+        "draft": {"id": rec["id"], "to": rec["to"], "channel": rec["channel"],
+                  "subject": rec["subject"], "body": rec["body"]},
     }
 
 
