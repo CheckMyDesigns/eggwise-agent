@@ -333,7 +333,7 @@ _CONSOLE_CSS = r"""
   .obx li{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 16px}
   .obx .oh{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-mute)}
   .obx .osub{font-weight:700;margin:3px 0}
-  .obx .obody{font-size:12.5px;color:var(--ink-soft);white-space:pre-wrap;margin-top:5px;max-height:80px;overflow:hidden}
+  .obx .obody{font-size:12.5px;color:var(--ink-soft);white-space:pre-wrap;margin-top:6px;line-height:1.55;max-height:200px;overflow:auto}
   .chan{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--teal-tint);color:var(--teal-lt)}
   .obx li input,.obx li textarea{width:100%;font:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;background:var(--card2);color:var(--ink);margin-top:8px;resize:vertical}
   .obx li textarea{min-height:120px;line-height:1.5}
