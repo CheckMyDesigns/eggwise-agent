@@ -48,8 +48,11 @@ def load_leads() -> list[dict]:
 
 
 def public_view(lead: dict) -> dict:
-    """De-identified, non-clinical view safe to render to anyone."""
-    return {k: lead.get(k) for k in _PUBLIC_FIELDS if k in lead}
+    """De-identified, non-clinical view. The full name appears only for leads who
+    consented to share; everyone else stays initials until they consent."""
+    view = {k: lead.get(k) for k in _PUBLIC_FIELDS if k in lead}
+    view["display"] = lead.get("name") if (lead.get("consented_to_share") and lead.get("name")) else lead.get("alias")
+    return view
 
 
 def detail_view(lead: dict) -> dict:

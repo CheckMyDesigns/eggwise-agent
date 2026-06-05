@@ -2,6 +2,7 @@
   {
     "id": "pl-001",
     "alias": "A.R.",
+    "name": "Amara Reyes",
     "age": 33,
     "location": "Las Vegas, NV",
     "goal": "egg freezing",
@@ -17,6 +18,7 @@
   {
     "id": "pl-002",
     "alias": "M.T.",
+    "name": "Mei Tanaka",
     "age": 38,
     "location": "Henderson, NV",
     "goal": "IVF",
@@ -43,6 +45,7 @@
   {
     "id": "pl-004",
     "alias": "D.P.",
+    "name": "Daniela Pereira",
     "age": 41,
     "location": "Los Angeles, CA",
     "goal": "IVF",
@@ -58,6 +61,7 @@
   {
     "id": "pl-005",
     "alias": "S.L.",
+    "name": "Sofia Lin",
     "age": 30,
     "location": "Las Vegas, NV",
     "goal": "fertility evaluation",
@@ -84,6 +88,7 @@
   {
     "id": "pl-007",
     "alias": "C.B.",
+    "name": "Chloe Barnes",
     "age": 34,
     "location": "San Diego, CA",
     "goal": "egg freezing",

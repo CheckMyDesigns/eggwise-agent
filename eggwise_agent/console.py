@@ -185,7 +185,7 @@ async def api_campaign_outreach(request: Request):
     def one(lead_view):
         lead = leads_data.get_lead(lead_view["id"])
         d = outreach.draft_outreach(lead, clinic=CLINIC, specialty=spec, channel=channel)
-        return {"recipient_id": lead_view["id"], "name": lead_view["alias"], "channel": channel,
+        return {"recipient_id": lead_view["id"], "name": lead_view.get("display") or lead_view["alias"], "channel": channel,
                 "subject": d["subject"], "body": d["body"], "chip": "fit " + str(lead_view["fit_score"])}
 
     items = list(await asyncio.gather(*[asyncio.to_thread(one, L) for L in ranked])) if ranked else []
@@ -411,7 +411,7 @@ async function renderLeads(){
   const data=await api(`/api/leads?specialty=${encodeURIComponent(SPECIALTY)}&location=${encodeURIComponent(LOCATION)}`);
   CLINIC=data.clinic||CLINIC;const g=$('#leadGrid');g.innerHTML='';
   data.leads.forEach(L=>{const cons=L.consented_to_share;const el=document.createElement('div');el.className='lead';el.onclick=()=>openLead(L.id);
-    el.innerHTML=`<div class="top"><div><div class="alias">${esc(L.alias)}</div><div class="meta">${L.age}, ${esc(L.location)}</div></div>
+    el.innerHTML=`<div class="top"><div><div class="alias">${esc(L.display||L.alias)}</div><div class="meta">${L.age}, ${esc(L.location)}</div></div>
       <div class="score ${scoreClass(L.fit_score)}">${L.fit_score}<small>fit</small></div></div>
       <span class="goal">${esc(L.goal)}</span><div class="reason">${esc(L.fit_reason)}</div>
       <span class="badge ${cons?'cons':'pend'}">${cons?'&#10003; Consented to share':'Consent pending'}</span>`;g.appendChild(el);});
@@ -421,7 +421,7 @@ function applyFilters(){SPECIALTY=$('#fSpec').value.trim();LOCATION=$('#fLoc').v
 
 let CHAN='email';
 async function openLead(id){
-  const d=await api(`/api/leads/${id}`);$('#dTitle').textContent=d.alias+' · '+d.goal;CHAN='email';
+  const d=await api(`/api/leads/${id}`);$('#dTitle').textContent=(d.display||d.alias)+' · '+d.goal;CHAN='email';
   const clin=d.clinical_visible?`<div class="clin"><h4>Clinical profile (consented)</h4>${Object.entries(d.clinical).map(([k,v])=>`<div class="kv"><b>${esc(k.toUpperCase())}</b>: ${esc(String(v))}</div>`).join('')}</div>`:`<div class="clin locked"><h4>Clinical profile</h4><div class="kv">${esc(d.clinical_note||'Locked')}</div></div>`;
   $('#dBody').innerHTML=`<div class="kv"><b>Age</b>: ${d.age}</div><div class="kv"><b>Location</b>: ${esc(d.location)}</div><div class="kv"><b>Goal</b>: ${esc(d.goal)}</div><div class="kv"><b>Wellness Score</b>: ${d.wellness_score}</div><div class="kv"><b>Signals</b>: ${esc(d.signals||'')}</div>${clin}
     <div class="compose"><div class="seg"><button id="chEmail" class="on" onclick="setChan('email')">Email</button><button id="chApp" onclick="setChan('in-app')">In-app message</button></div>
