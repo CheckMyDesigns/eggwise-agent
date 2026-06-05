@@ -566,8 +566,19 @@ function renderAsk(){
 function drawChat(){const tx=$('#tx');if(!tx)return;tx.innerHTML=CHAT.map(m=> m.role==='card'?`<div class="cardrow">${m.html}</div>`:`<div class="msg ${m.role==='me'?'me':'bot'}">${m.role==='me'?esc(m.html):m.html}</div>`).join('');$('#main').scrollTop=$('#main').scrollHeight;}
 async function ask(text){
   if(!$('#tx'))go('ask');
-  CHAT.push({role:'me',html:text});const idx=CHAT.push({role:'bot',html:'<span class="spin"></span>'})-1;drawChat();
+  CHAT.push({role:'me',html:text});drawChat();
+  // Instant path: data the clinic already has (the patient panel). No model round trip.
+  if(/\b(at[\s-]?risk|triage|highest risk|needs attention)\b/i.test(text) && !/\b(draft|write|send|outreach|message|email|schedule|remind|book|check-?in)\b/i.test(text)){
+    const d=await api('/api/triage');
+    const rows=d.patients.map(p=>`<li><b>${esc(p.name)}</b> &middot; ${p.risk_level==='high'?'<span style="color:var(--risk)">at risk</span>':p.risk_level==='watch'?'<span style="color:var(--warn)">watch</span>':'stable'} &middot; ${Math.round(p.adherence_rate*100)}% adherence &middot; ${p.doses_missed} missed`).join('');
+    CHAT.push({role:'bot',html:`<b>Your patient panel by risk</b> (from the daily logs):<ul>${rows}</ul><span class="muted">Ask me to draft check-ins for the at-risk ones.</span>`});drawChat();return;
+  }
+  // Otherwise the agent gathers/drafts: show live progress instead of a bare spinner.
+  const idx=CHAT.push({role:'bot',html:'<span class="spin"></span> <span class="muted">Understanding your request&hellip;</span>'})-1;drawChat();
+  const steps=["Routing to the right specialist&hellip;","Gathering the details&hellip;","Drafting your response&hellip;"];let si=0;
+  const timer=setInterval(()=>{if(CHAT[idx]){CHAT[idx].html='<span class="spin"></span> <span class="muted">'+steps[Math.min(si++,steps.length-1)]+'</span>';drawChat();}},2400);
   const r=await jpost('/api/agent',{message:text,audience:'clinic'});
+  clearInterval(timer);
   CHAT[idx].html=r.error?`<span class="muted">Agent unavailable here (${esc(r.error)}). The console actions still work.</span>`:mdToHtml(r.text||'(no response)');
   if(r.draft&&r.draft.id){const d=r.draft;const sub=d.subject?`<input id="ds_${d.id}" value="${esc(d.subject)}">`:'';
     CHAT.push({role:'card',draftId:d.id,html:`<div class="ccard"><div class="ch"><span class="nm">Check-in for ${esc(d.to)}</span><span class="chan">${esc(d.channel)}</span></div>${sub}<textarea id="db_${d.id}">${esc(d.body)}</textarea><div class="crow"><button class="btn teal" onclick="sendInlineDraft('${d.id}')">Send</button><span class="muted">Edit above, or find it in the Outbox.</span></div></div>`});}

@@ -136,8 +136,20 @@ function renderChat(){
 function drawChat(){const tx=$('#tx');if(!tx)return;tx.innerHTML=CHAT.map(m=>`<div class="msg ${m.role==='me'?'me':'bot'}">${m.role==='me'?esc(m.html):m.html}</div>`).join('');$('#main').scrollTop=$('#main').scrollHeight;}
 async function ask(text){
   if(!$('#tx'))go('chat');
-  CHAT.push({role:'me',html:text});const idx=CHAT.push({role:'bot',html:'<span class="spin"></span>'})-1;drawChat();
+  CHAT.push({role:'me',html:text});drawChat();
+  // Instant path: the patient's own data. Clinical wording is excluded so it still reaches the guardrail.
+  if(/\b(how am i doing|adherence|on track|my meds|streak|how('?s| is) my)\b/i.test(text) && !/\b(remind|reminder|book|set|schedule|draft|change|increase|dose|pain|bleed|symptom|normal)\b/i.test(text)){
+    const a=await api('/api/adherence?patient_id='+encodeURIComponent(PID));
+    if(!a.error && a.name!==undefined){
+      const pct=a.days_reviewed?Math.round((a.days_reviewed-a.doses_missed)/a.days_reviewed*100):100;
+      CHAT.push({role:'bot',html:`${a.on_track?"You're on track.":"You're a little behind."} <b>${pct}%</b> adherence over ${a.days_reviewed} days, current streak <b>${a.current_streak_days}</b> day(s)${a.doses_missed?', '+a.doses_missed+' missed':''}. ${a.on_track?'Keep it up!':'Want me to set a reminder?'}`});drawChat();return;
+    }
+  }
+  const idx=CHAT.push({role:'bot',html:'<span class="spin"></span> <span class="muted">Looking into that&hellip;</span>'})-1;drawChat();
+  const steps=["Pulling up your info&hellip;","Almost there&hellip;"];let si=0;
+  const timer=setInterval(()=>{if(CHAT[idx]){CHAT[idx].html='<span class="spin"></span> <span class="muted">'+steps[Math.min(si++,steps.length-1)]+'</span>';drawChat();}},2400);
   const r=await jpost('/api/agent',{message:text,audience:'patient',patient_id:PID,patient_name:PNAME});
+  clearInterval(timer);
   CHAT[idx].html=r.error?`<span class="muted">Companion unavailable here (${esc(r.error)}). Reminders and booking still work.</span>`:mdToHtml(r.text||'(no response)');
   drawChat();
 }
