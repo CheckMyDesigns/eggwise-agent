@@ -1,7 +1,7 @@
 [
   {
     "id": "pt-maya",
-    "name": "Maya (demo)",
+    "name": "Maya Chen",
     "logs": [
       {"date": "2026-05-30", "meds_taken": true, "symptoms": ["mild bloating"], "mood": 4, "notes": "Feeling good, on track."},
       {"date": "2026-05-29", "meds_taken": true, "symptoms": [], "mood": 5, "notes": ""},
@@ -12,7 +12,7 @@
   },
   {
     "id": "pt-jasmine",
-    "name": "Jasmine (demo)",
+    "name": "Jasmine Rivera",
     "logs": [
       {"date": "2026-05-30", "meds_taken": false, "symptoms": [], "mood": 2, "notes": ""},
       {"date": "2026-05-29", "meds_taken": false, "symptoms": [], "mood": 2, "notes": "Missed dose again, busy week."},
@@ -23,7 +23,7 @@
   },
   {
     "id": "pt-sarah",
-    "name": "Sarah (demo)",
+    "name": "Sarah Bennett",
     "logs": [
       {"date": "2026-05-30", "meds_taken": true, "symptoms": ["pelvic pain", "bloating"], "mood": 2, "notes": "Discomfort increasing."},
       {"date": "2026-05-29", "meds_taken": true, "symptoms": ["bloating"], "mood": 3, "notes": ""},
@@ -34,7 +34,7 @@
   },
   {
     "id": "pt-david",
-    "name": "David (demo, partner of patient)",
+    "name": "David Okafor",
     "logs": [
       {"date": "2026-05-30", "meds_taken": true, "symptoms": [], "mood": 3, "notes": ""},
       {"date": "2026-05-29", "meds_taken": true, "symptoms": [], "mood": 3, "notes": "Steady but a bit anxious about timeline."},

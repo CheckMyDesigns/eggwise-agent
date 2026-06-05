@@ -75,6 +75,12 @@ async def api_outbox_approve(request: Request):
     return outreach.approve_message(b["id"]) if b.get("id") else outreach.approve_all()
 
 
+@router.post("/api/outbox/discard")
+async def api_outbox_discard(request: Request):
+    b = await request.json()
+    return outreach.discard_message(b.get("id", ""))
+
+
 @router.get("/api/patients")
 def api_patients():
     return {"patients": tools.list_patients()}
@@ -322,6 +328,11 @@ _CONSOLE_CSS = r"""
   .ccard input,.ccard textarea{width:100%;font:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;background:var(--card2);color:var(--ink);margin-top:8px;resize:vertical}
   .ccard textarea{min-height:120px;line-height:1.5}
   .ccard:focus-within{border-color:var(--teal)}
+  .cmodal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%);width:min(420px,92vw);background:var(--bg2);border:1px solid var(--line2);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);z-index:60;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+  .cmodal.on{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+  .cmtitle{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;margin-bottom:8px}
+  .cmbody{font-size:13.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:16px}
+  .cmact{display:flex;gap:10px;justify-content:flex-end}
 """
 
 CONSOLE_HTML = (r"""<!doctype html>
@@ -371,6 +382,8 @@ __CONSOLE__</style>
   <div class="scrim" id="scrim" onclick="closeDrawer()"></div>
   <div class="drawer" id="drawer"><div class="dh"><div id="dTitle" style="font-family:'Poppins',sans-serif;font-weight:700;font-size:18px"></div><button class="x" onclick="closeDrawer()">&times;</button></div><div class="db" id="dBody"></div></div>
   <div id="toast"></div>
+  <div class="scrim" id="cscrim" onclick="closeConfirm()"></div>
+  <div class="cmodal" id="cmodal"><div class="cmtitle" id="cmTitle"></div><div class="cmbody" id="cmBody"></div><div class="cmact"><button class="btn ghost" onclick="closeConfirm()">Cancel</button><button class="btn teal" id="cmOk">Confirm &amp; send</button></div></div>
 
 <script>
 const $=(s,r=document)=>r.querySelector(s);
@@ -496,18 +509,23 @@ async function doReminder(){const r=await jpost('/api/reminder',{patient_id:$('#
 
 /* OUTBOX */
 async function renderOutbox(){
-  $('#main').innerHTML=`<h1>Outbox</h1><p class="sub">Agent-drafted messages wait here as Queued for review. Approve to send. Nothing leaves the system (demo).</p><div id="obtop"></div><ul class="obx" id="obx"></ul>`;
+  $('#main').innerHTML=`<h1>Outbox</h1><p class="sub">Agent-drafted messages wait here as Queued for review. You confirm and send each one (or all at once), or discard it. Nothing leaves the system in this demo.</p><div id="obtop"></div><ul class="obx" id="obx"></ul>`;
   const data=await api('/api/outbox');const o=$('#obx');const msgs=data.messages;
   const nq=msgs.filter(m=>m.status==='queued_for_review').length;
-  $('#obtop').innerHTML=nq?`<div class="crow" style="margin-bottom:12px"><button class="btn teal" onclick="approveAll()">Approve &amp; send all queued (${nq})</button><span class="muted">Drafted by the agent, awaiting your review.</span></div>`:'';
+  $('#obtop').innerHTML=nq?`<div class="crow" style="margin-bottom:12px"><button class="btn teal" onclick="askConfirm('Send all queued messages?','You are about to send ${nq} agent-drafted messages to their recipients.','Confirm & send all',doApproveAll)">Confirm & send all (${nq})</button><span class="muted">Drafted by the agent, awaiting your review.</span></div>`:'';
   if(!msgs.length){o.innerHTML='<div class="empty">No messages yet. Use Ask EggWise, Leads, a patient check-in, or Campaigns.</div>';return;}
   msgs.forEach(m=>{const li=document.createElement('li');const isq=m.status==='queued_for_review';
-    const st=isq?'<span class="badge watch">Queued for review</span>':'<span class="badge stable">Sent</span>';
-    const act=isq?`<div class="crow" style="margin-top:9px"><button class="btn teal" onclick="approveMsg('${m.id}')">Approve &amp; send</button></div>`:'';
+    const st=isq?'<span class="badge watch">Queued for review</span>':'<span class="badge stable">Sent &#10003;</span>';
+    const act=isq?`<div class="crow" style="margin-top:9px"><button class="btn teal" onclick="askConfirm('Send this message?','The agent drafted this. Confirming records it as sent to ${esc(m.to)}.','Confirm & send',()=>doApprove('${m.id}'))">Confirm & send</button><button class="btn ghost" onclick="askConfirm('Discard this draft?','This removes the queued draft without sending it.','Discard',()=>doDiscard('${m.id}'))">Discard</button></div>`:'';
     li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span>${st} &nbsp; ${esc(m.sent_at)}</span></div>${m.subject?`<div class="osub">${esc(m.subject)}</div>`:''}<div class="obody">${esc(m.body)}</div>${act}`;o.appendChild(li);});
 }
-async function approveMsg(id){await jpost('/api/outbox/approve',{id});toast('Approved and sent');renderOutbox();}
-async function approveAll(){await jpost('/api/outbox/approve',{});toast('All queued approved and sent');renderOutbox();}
+let _cmCb=null;
+function askConfirm(title,body,ok,cb){_cmCb=cb;$('#cmTitle').textContent=title;$('#cmBody').textContent=body;$('#cmOk').textContent=ok;$('#cscrim').classList.add('on');$('#cmodal').classList.add('on');}
+function closeConfirm(){$('#cscrim').classList.remove('on');$('#cmodal').classList.remove('on');_cmCb=null;}
+$('#cmOk').onclick=()=>{const cb=_cmCb;closeConfirm();if(cb)cb();};
+async function doApprove(id){await jpost('/api/outbox/approve',{id});toast('Confirmed and sent');renderOutbox();}
+async function doApproveAll(){await jpost('/api/outbox/approve',{});toast('All confirmed and sent');renderOutbox();}
+async function doDiscard(id){await jpost('/api/outbox/discard',{id});toast('Draft discarded');renderOutbox();}
 
 /* ASK EGGWISE (chat) */
 function renderAsk(){

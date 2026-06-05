@@ -245,3 +245,18 @@ def approve_all() -> dict:
             n += 1
     n += _fs_set_sent("status", "queued_for_review")
     return {"approved": n}
+
+
+def discard_message(msg_id: str) -> dict:
+    """Discard a queued draft without sending (the human rejected it)."""
+    global _OUTBOX
+    _OUTBOX = [r for r in _OUTBOX if r.get("id") != msg_id]
+    fs = _outbox_fs()
+    if fs:
+        try:
+            from google.cloud.firestore_v1.base_query import FieldFilter
+            for doc in fs.collection(_OUTBOX_COLL).where(filter=FieldFilter("id", "==", msg_id)).stream():
+                doc.reference.delete()
+        except Exception:
+            pass
+    return {"id": msg_id, "status": "discarded"}
