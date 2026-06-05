@@ -519,14 +519,24 @@ async function sendOne(i){await jpost('/api/outreach/send',collect(i));$('#cc'+i
 async function sendAll(){const items=window.CAMP.map((m,i)=>collect(i));await jpost('/api/send_batch',{items});document.querySelectorAll('.ccard').forEach(c=>c.classList.add('sent'));toast('Sent '+items.length+' to Outbox');}
 
 /* SCHEDULE */
-function renderSchedule(){
-  $('#main').innerHTML=`<h1>Schedule</h1><p class="sub">Create follow-up invites and medication reminders. Each returns a real add-to-calendar link.</p>
-  <div class="panel"><h3>Follow-up appointment</h3><div class="field"><label>Patient id</label><input id="sPid" value="pt-jasmine"></div>
+async function renderSchedule(){
+  $('#main').innerHTML=`<h1>Schedule</h1><p class="sub">Create follow-up invites and medication reminders. Each returns a real add-to-calendar link.</p><div id="schedBody"><div class="empty">Loading <span class="spin"></span></div></div>`;
+  const pts=(await api('/api/patients')).patients||[];
+  const def=(pts.find(p=>p.id==='pt-jasmine')||pts[0]||{}).id||'';
+  const popt=pts.map(p=>`<option value="${esc(p.id)}"${p.id===def?' selected':''}>${esc(p.name)}</option>`).join('');
+  const reasons=["follow-up consultation","cycle review","medication review","results review","general check-in"];
+  const ropt=reasons.map((r,i)=>`<option${i===1?' selected':''}>${esc(r)}</option>`).join('');
+  $('#schedBody').innerHTML=`
+  <div class="panel"><h3>Follow-up appointment</h3>
+    <div class="field"><label>Patient</label><select id="sPid">${popt}</select></div>
     <div class="row2"><div class="field"><label>Date</label><input id="sDate" type="date" value="2026-06-15"></div><div class="field"><label>Time</label><input id="sTime" type="time" value="09:00"></div></div>
-    <div class="field"><label>Reason</label><input id="sReason" value="cycle review"></div><button class="btn teal" onclick="doSchedule()">Create invite</button><div id="sOut"></div></div>
-  <div class="panel"><h3>Medication reminder</h3><div class="field"><label>Patient id</label><input id="rPid" value="pt-jasmine"></div>
+    <div class="field"><label>Reason</label><select id="sReason">${ropt}</select></div>
+    <button class="btn teal" onclick="doSchedule()">Create invite</button><div id="sOut"></div></div>
+  <div class="panel"><h3>Medication reminder</h3>
+    <div class="field"><label>Patient</label><select id="rPid">${popt}</select></div>
     <div class="row2"><div class="field"><label>Medication</label><input id="rMed" value="evening medication"></div><div class="field"><label>Time</label><input id="rTime" type="time" value="20:00"></div></div>
-    <div class="field"><label>Repeat for (days)</label><input id="rDays" type="number" value="14"></div><button class="btn teal" onclick="doReminder()">Create reminder</button><div id="rOut"></div></div>`;
+    <div class="field"><label>Repeat for (days)</label><input id="rDays" type="number" value="14"></div>
+    <button class="btn teal" onclick="doReminder()">Create reminder</button><div id="rOut"></div></div>`;
 }
 async function doSchedule(){const r=await jpost('/api/schedule',{patient_id:$('#sPid').value,date:$('#sDate').value,time:$('#sTime').value,reason:$('#sReason').value});$('#sOut').innerHTML=r.error?`<div class="result">${esc(r.error)}</div>`:`<div class="result"><b>${esc(r.title)}</b><br>${esc(r.start)} (${esc(r.timezone)})<br><br><a class="btn gold" href="${r.google_calendar_link}" target="_blank">Add to Google Calendar</a></div>`;}
 async function doReminder(){const r=await jpost('/api/reminder',{patient_id:$('#rPid').value,medication:$('#rMed').value,time:$('#rTime').value,days:$('#rDays').value});$('#rOut').innerHTML=r.error?`<div class="result">${esc(r.error)}</div>`:`<div class="result"><b>${esc(r.medication)}</b> · ${esc(r.frequency)}<br><br><a class="btn gold" href="${r.google_calendar_link}" target="_blank">Add reminder to Google Calendar</a></div>`;}
