@@ -27,7 +27,7 @@ leads_toolset = MCPToolset(
             args=[_MCP_SERVER],
             env=dict(os.environ),  # forward EGGWISE_* + Vertex config to the server
         ),
-        timeout=30,
+        timeout=120,  # headroom for the MCP subprocess to start on a cold instance
     )
 )
 
