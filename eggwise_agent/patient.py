@@ -65,8 +65,8 @@ __PATIENT__</style>
   <div class="shell">
     <nav class="side">
       <div class="ntitle">My EggWise</div>
-      <button class="navbtn ask" data-view="chat"><span class="ico">&#128172;</span> Ask EggWise</button>
-      <button class="navbtn active" data-view="home"><span class="ico">&#128202;</span> Dashboard</button>
+      <button class="navbtn ask active" data-view="chat"><span class="ico">&#128172;</span> Ask EggWise</button>
+      <button class="navbtn" data-view="home"><span class="ico">&#128202;</span> Dashboard</button>
       <button class="navbtn" data-view="care"><span class="ico">&#128138;</span> Reminders &amp; visits</button>
       <button class="navbtn" data-view="learn"><span class="ico">&#128214;</span> Learn</button>
     </nav>
@@ -74,8 +74,8 @@ __PATIENT__</style>
   </div>
 
   <nav class="tabbar">
-    <button class="navbtn ask" data-view="chat"><span class="ico">&#128172;</span>Ask</button>
-    <button class="navbtn active" data-view="home"><span class="ico">&#128202;</span>Dashboard</button>
+    <button class="navbtn ask active" data-view="chat"><span class="ico">&#128172;</span>Ask</button>
+    <button class="navbtn" data-view="home"><span class="ico">&#128202;</span>Dashboard</button>
     <button class="navbtn" data-view="care"><span class="ico">&#128138;</span>Care</button>
     <button class="navbtn" data-view="learn"><span class="ico">&#128214;</span>Learn</button>
   </nav>
@@ -100,7 +100,7 @@ function render(v){({home:renderHome,chat:renderChat,care:renderCare,learn:rende
 async function init(){
   const data=await api('/api/patients');const sel=$('#psel');
   data.patients.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=firstName(p.name);sel.appendChild(o);});
-  const def=data.patients.find(p=>p.id==='pt-jasmine')||data.patients[0];PID=def.id;PNAME=def.name;sel.value=PID;renderHome();
+  const def=data.patients.find(p=>p.id==='pt-jasmine')||data.patients[0];PID=def.id;PNAME=def.name;sel.value=PID;renderChat();
 }
 function pickPatient(id){PID=id;const s=$('#psel');PNAME=s.options[s.selectedIndex].text;CHAT=[];go('home');}
 

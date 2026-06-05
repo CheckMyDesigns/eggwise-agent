@@ -347,8 +347,8 @@ __CONSOLE__</style>
   <div class="shell">
     <nav class="side">
       <div class="ntitle">Front desk</div>
-      <button class="navbtn ask" data-view="ask"><span class="ico">&#128172;</span> Ask EggWise</button>
-      <button class="navbtn active" data-view="leads"><span class="ico">&#9733;</span> Leads</button>
+      <button class="navbtn ask active" data-view="ask"><span class="ico">&#128172;</span> Ask EggWise</button>
+      <button class="navbtn" data-view="leads"><span class="ico">&#9733;</span> Leads</button>
       <button class="navbtn" data-view="patients"><span class="ico">&#129658;</span> Patients</button>
       <button class="navbtn" data-view="campaigns"><span class="ico">&#128640;</span> Campaigns</button>
       <button class="navbtn" data-view="schedule"><span class="ico">&#128197;</span> Schedule</button>
@@ -360,8 +360,8 @@ __CONSOLE__</style>
   </div>
 
   <nav class="tabbar">
-    <button class="navbtn ask" data-view="ask"><span class="ico">&#128172;</span>Ask</button>
-    <button class="navbtn active" data-view="leads"><span class="ico">&#9733;</span>Leads</button>
+    <button class="navbtn ask active" data-view="ask"><span class="ico">&#128172;</span>Ask</button>
+    <button class="navbtn" data-view="leads"><span class="ico">&#9733;</span>Leads</button>
     <button class="navbtn" data-view="patients"><span class="ico">&#129658;</span>Patients</button>
     <button class="navbtn" data-view="campaigns"><span class="ico">&#128640;</span>Send</button>
     <button class="navbtn" data-view="schedule"><span class="ico">&#128197;</span>Schedule</button>
@@ -539,7 +539,7 @@ function mdToHtml(md){const lines=(md||'').split('\n');let out='';let inList=fal
   flush();return out;}
 function inl(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
 
-renderLeads();
+renderAsk();
 </script>
 </body>
 </html>""".replace("__FONT__", FONT_LINK).replace("__BASE__", BASE_CSS)
