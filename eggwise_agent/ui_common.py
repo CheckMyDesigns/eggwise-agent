@@ -37,6 +37,12 @@ BASE_CSS = r"""
   body{font-family:'Nunito Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);
     -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;height:100vh;overflow:hidden}
   a{color:var(--teal-lt);text-decoration:none}
+  /* themed scrollbars (match the dusty-teal UI) */
+  *{scrollbar-width:thin;scrollbar-color:rgba(116,160,160,.45) transparent}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(116,160,160,.38);border-radius:8px;border:2px solid transparent;background-clip:padding-box}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(116,160,160,.62);background-clip:padding-box}
   /* top bar */
   header{display:flex;align-items:center;gap:12px;padding:12px 18px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:9px;font-family:'Poppins',sans-serif;font-weight:700;font-size:19px}
