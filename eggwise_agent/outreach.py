@@ -223,14 +223,30 @@ def _fs_set_sent(field: str, value: str) -> int:
     return n
 
 
-def approve_message(msg_id: str) -> dict:
-    """Approve a queued-for-review message: mark it sent (human-in-the-loop). Updates the
-    in-instance copy and Firestore if configured."""
+def approve_message(msg_id: str, subject: str = None, body: str = None) -> dict:
+    """Approve a queued-for-review message: apply any clinician edits, then mark it sent
+    (human-in-the-loop). Updates the in-instance copy and Firestore if configured."""
     for rec in _OUTBOX:
         if rec.get("id") == msg_id and rec.get("status") != "sent":
+            if subject is not None:
+                rec["subject"] = subject
+            if body is not None:
+                rec["body"] = body
             rec["status"] = "sent"
             rec["sent_at"] = _now()
-    _fs_set_sent("id", msg_id)
+    fs = _outbox_fs()
+    if fs:
+        try:
+            from google.cloud.firestore_v1.base_query import FieldFilter
+            upd = {"status": "sent", "sent_at": _now()}
+            if subject is not None:
+                upd["subject"] = subject
+            if body is not None:
+                upd["body"] = body
+            for doc in fs.collection(_OUTBOX_COLL).where(filter=FieldFilter("id", "==", msg_id)).stream():
+                doc.reference.update(upd)
+        except Exception:
+            pass
     return {"id": msg_id, "status": "sent"}
 
 

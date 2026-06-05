@@ -36,6 +36,22 @@ def queue_patient_checkins(audience: str = "at_risk", channel: str = "in-app") -
     }
 
 
+def queue_checkin(patient_id: str, channel: str = "in-app") -> dict:
+    """Draft a personalized check-in for ONE patient and queue it in the Outbox for the
+    clinician to review, edit, and send (Care). Use this whenever asked to draft or write
+    a check-in for a patient. The draft is non-clinical and never auto-sends.
+    """
+    rep = tools.generate_health_report(patient_id)
+    if "error" in rep:
+        return rep
+    d = outreach.draft_checkin(rep["name"], rep, config.CLINIC_NAME, channel)
+    outreach.queue_message(patient_id, channel, d["subject"], d["body"], to=rep["name"])
+    return {
+        "queued": 1, "patient": rep["name"], "channel": channel, "status": "queued_for_review",
+        "note": "Drafted and queued in the Outbox. Open the Outbox to review, edit, and send it.",
+    }
+
+
 def queue_lead_outreach(count: int = 3, channel: str = "email",
                         specialty: str = "", location: str = "") -> dict:
     """Autonomously draft personalized first-contact outreach for the top prospective

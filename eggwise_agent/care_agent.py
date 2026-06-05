@@ -32,7 +32,9 @@ care_agent = Agent(
         "clinician's attention. Do not diagnose; surface, do not conclude.\n"
         "3. For a full picture, call generate_health_report to get adherence, symptom "
         "frequency, mood trend, and risk flags plus a clinician-ready report.\n"
-        "4. Draft a brief, warm check-in message the CLINICIAN can edit and send.\n"
+        "4. To write a check-in for a patient, call queue_checkin with the patient id; it drafts "
+        "a personalized check-in and queues it in the Outbox for the clinician to review, EDIT, and "
+        "send. Tell the clinician it is waiting in the Outbox; do not paste the full message into the chat.\n"
         "5. If a follow-up is warranted, call schedule_followup with a date, time, and "
         "reason; it returns a Google Calendar invite link the clinician can review and "
         "send. Use reschedule_followup or cancel_followup to move or cancel one.\n"
@@ -51,6 +53,7 @@ care_agent = Agent(
         calendar_tools.schedule_followup,
         calendar_tools.reschedule_followup,
         calendar_tools.cancel_followup,
+        autonomy.queue_checkin,
         autonomy.queue_patient_checkins,
     ],
 )

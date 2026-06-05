@@ -78,7 +78,9 @@ def api_outbox():
 @router.post("/api/outbox/approve")
 async def api_outbox_approve(request: Request):
     b = await request.json()
-    return outreach.approve_message(b["id"]) if b.get("id") else outreach.approve_all()
+    if b.get("id"):
+        return outreach.approve_message(b["id"], b.get("subject"), b.get("body"))
+    return outreach.approve_all()
 
 
 @router.post("/api/outbox/discard")
@@ -324,6 +326,9 @@ _CONSOLE_CSS = r"""
   .obx .osub{font-weight:700;margin:3px 0}
   .obx .obody{font-size:12.5px;color:var(--ink-soft);white-space:pre-wrap;margin-top:5px;max-height:80px;overflow:hidden}
   .chan{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--teal-tint);color:var(--teal-lt)}
+  .obx li input,.obx li textarea{width:100%;font:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--line2);border-radius:9px;background:var(--card2);color:var(--ink);margin-top:8px;resize:vertical}
+  .obx li textarea{min-height:120px;line-height:1.5}
+  .obx li input:focus,.obx li textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-tint)}
   /* campaigns */
   .cbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
   .cbar .field{margin:0}.cbar select{font:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--line2);border-radius:10px;background:var(--card2);color:var(--ink)}
@@ -518,21 +523,26 @@ async function doReminder(){const r=await jpost('/api/reminder',{patient_id:$('#
 
 /* OUTBOX */
 async function renderOutbox(){
-  $('#main').innerHTML=`<h1>Outbox</h1><p class="sub">Agent-drafted messages wait here as Queued for review. You confirm and send each one (or all at once), or discard it. Nothing leaves the system in this demo.</p><div id="obtop"></div><ul class="obx" id="obx"></ul>`;
+  $('#main').innerHTML=`<h1>Outbox</h1><p class="sub">Agent-drafted messages wait here as Queued for review. Edit the message, then confirm and send (or discard). Nothing leaves the system in this demo.</p><div id="obtop"></div><ul class="obx" id="obx"></ul>`;
   const data=await api('/api/outbox');const o=$('#obx');const msgs=data.messages;
   const nq=msgs.filter(m=>m.status==='queued_for_review').length;
-  $('#obtop').innerHTML=nq?`<div class="crow" style="margin-bottom:12px"><button class="btn teal" onclick="askConfirm('Send all queued messages?','You are about to send ${nq} agent-drafted messages to their recipients.','Confirm & send all',doApproveAll)">Confirm & send all (${nq})</button><span class="muted">Drafted by the agent, awaiting your review.</span></div>`:'';
+  $('#obtop').innerHTML=nq?`<div class="crow" style="margin-bottom:12px"><button class="btn teal" onclick="askConfirm('Send all queued messages?','You are about to send ${nq} agent-drafted messages to their recipients.','Confirm & send all',doApproveAll)">Confirm & send all (${nq})</button><span class="muted">Edit any draft below before sending; Send all uses them as-is.</span></div>`:'';
   if(!msgs.length){o.innerHTML='<div class="empty">No messages yet. Use Ask EggWise, Leads, a patient check-in, or Campaigns.</div>';return;}
-  msgs.forEach(m=>{const li=document.createElement('li');const isq=m.status==='queued_for_review';
-    const st=isq?'<span class="badge watch">Queued for review</span>':'<span class="badge stable">Sent &#10003;</span>';
-    const act=isq?`<div class="crow" style="margin-top:9px"><button class="btn teal" onclick="askConfirm('Send this message?','The agent drafted this. Confirming records it as sent to ${esc(m.to)}.','Confirm & send',()=>doApprove('${m.id}'))">Confirm & send</button><button class="btn ghost" onclick="askConfirm('Discard this draft?','This removes the queued draft without sending it.','Discard',()=>doDiscard('${m.id}'))">Discard</button></div>`:'';
-    li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span>${st} &nbsp; ${esc(m.sent_at)}</span></div>${m.subject?`<div class="osub">${esc(m.subject)}</div>`:''}<div class="obody">${esc(m.body)}</div>${act}`;o.appendChild(li);});
+  msgs.forEach(m=>{const li=document.createElement('li');
+    if(m.status==='queued_for_review'){
+      const subIn=(m.subject!==undefined&&m.subject!=='')?`<input id="os_${m.id}" value="${esc(m.subject)}">`:'';
+      li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span class="badge watch">Queued for review</span></div>${subIn}<textarea id="ob_${m.id}">${esc(m.body)}</textarea>
+        <div class="crow" style="margin-top:9px"><button class="btn teal" onclick="askConfirm('Send this message?','Sends your edited message and records it as sent to ${esc(m.to)}.','Confirm & send',()=>doApprove('${m.id}'))">Confirm & send</button><button class="btn ghost" onclick="askConfirm('Discard this draft?','This removes the queued draft without sending it.','Discard',()=>doDiscard('${m.id}'))">Discard</button></div>`;
+    } else {
+      li.innerHTML=`<div class="oh"><span><span class="chan">${esc(m.channel)}</span> &nbsp;to ${esc(m.to)}</span><span><span class="badge stable">Sent &#10003;</span> &nbsp; ${esc(m.sent_at)}</span></div>${m.subject?`<div class="osub">${esc(m.subject)}</div>`:''}<div class="obody">${esc(m.body)}</div>`;
+    }
+    o.appendChild(li);});
 }
 let _cmCb=null;
 function askConfirm(title,body,ok,cb){_cmCb=cb;$('#cmTitle').textContent=title;$('#cmBody').textContent=body;$('#cmOk').textContent=ok;$('#cscrim').classList.add('on');$('#cmodal').classList.add('on');}
 function closeConfirm(){$('#cscrim').classList.remove('on');$('#cmodal').classList.remove('on');_cmCb=null;}
 $('#cmOk').onclick=()=>{const cb=_cmCb;closeConfirm();if(cb)cb();};
-async function doApprove(id){await jpost('/api/outbox/approve',{id});toast('Confirmed and sent');renderOutbox();}
+async function doApprove(id){const sb=$('#os_'+id),bb=$('#ob_'+id);const p={id};if(sb)p.subject=sb.value;if(bb)p.body=bb.value;await jpost('/api/outbox/approve',p);toast('Confirmed and sent');renderOutbox();}
 async function doApproveAll(){await jpost('/api/outbox/approve',{});toast('All confirmed and sent');renderOutbox();}
 async function doDiscard(id){await jpost('/api/outbox/discard',{id});toast('Draft discarded');renderOutbox();}
 
